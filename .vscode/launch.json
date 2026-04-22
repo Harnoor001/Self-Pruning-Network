@@ -1,0 +1,42 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Train Self-Pruning Model",
+      "type": "python",
+      "request": "launch",
+      "program": "${workspaceFolder}/scripts/train_and_report.py",
+      "console": "integratedTerminal",
+      "cwd": "${workspaceFolder}",
+      "args": [
+        "--epochs",
+        "1",
+        "--batch-size",
+        "64",
+        "--train-subset",
+        "2048",
+        "--test-subset",
+        "512",
+        "--lambdas",
+        "0.0001",
+        "0.001",
+        "0.01"
+      ]
+    },
+    {
+      "name": "Run FastAPI App",
+      "type": "python",
+      "request": "launch",
+      "module": "uvicorn",
+      "console": "integratedTerminal",
+      "cwd": "${workspaceFolder}",
+      "env": {
+        "MODEL_CHECKPOINT": "${workspaceFolder}/artifacts_smoke/checkpoints/best_lambda_0.0001.pt"
+      },
+      "args": [
+        "app.api:app",
+        "--reload"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,57 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Install Project Dependencies",
+      "type": "shell",
+      "command": "C:\\Users\\sharn\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe",
+      "args": [
+        "-m",
+        "pip",
+        "install",
+        "-e",
+        ".[dev]"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Run Tests",
+      "type": "shell",
+      "command": "C:\\Users\\sharn\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\Scripts\\pytest.exe",
+      "args": [
+        "-q"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Smoke Train",
+      "type": "shell",
+      "command": "C:\\Users\\sharn\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe",
+      "args": [
+        "scripts\\train_and_report.py",
+        "--epochs",
+        "1",
+        "--batch-size",
+        "32",
+        "--train-subset",
+        "128",
+        "--test-subset",
+        "64",
+        "--lambdas",
+        "0.0001",
+        "--output-dir",
+        "artifacts_smoke"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": []
+    }
+  ]
+}
