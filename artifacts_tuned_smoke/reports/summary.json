@@ -1,0 +1,7 @@
+{
+  "best_lambda": 0.0001,
+  "best_validation_accuracy": 0.0833333358168602,
+  "best_test_accuracy": 0.15625,
+  "best_sparsity_percent": 0.0,
+  "best_checkpoint": "artifacts_tuned_smoke\\checkpoints\\best_lambda_0.0001.pt"
+}

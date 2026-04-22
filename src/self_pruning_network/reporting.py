@@ -4,6 +4,7 @@ from pathlib import Path
 
 import matplotlib.pyplot as plt
 import pandas as pd
+from matplotlib.ticker import MaxNLocator
 
 
 def write_results_table(results: list[dict[str, float | str]], destination: str | Path) -> pd.DataFrame:
@@ -65,3 +66,112 @@ def plot_gate_distribution(gate_values, destination: str | Path, title: str) -> 
     plt.savefig(destination, dpi=160)
     plt.close()
 
+
+def plot_lambda_metric(
+    results_frame: pd.DataFrame,
+    metric_column: str,
+    destination: str | Path,
+    title: str,
+    y_label: str,
+) -> None:
+    destination = Path(destination)
+    destination.parent.mkdir(parents=True, exist_ok=True)
+
+    ordered = results_frame.sort_values("lambda")
+    plt.figure(figsize=(8, 5))
+    plt.plot(ordered["lambda"], ordered[metric_column], marker="o", linewidth=2.2, color="#1768ac")
+    plt.xscale("log")
+    plt.title(title)
+    plt.xlabel("Lambda")
+    plt.ylabel(y_label)
+    plt.grid(alpha=0.25)
+    plt.tight_layout()
+    plt.savefig(destination, dpi=160)
+    plt.close()
+
+
+def plot_accuracy_vs_sparsity(results_frame: pd.DataFrame, destination: str | Path) -> None:
+    destination = Path(destination)
+    destination.parent.mkdir(parents=True, exist_ok=True)
+
+    plt.figure(figsize=(8, 5))
+    plt.scatter(
+        results_frame["sparsity_percent"],
+        results_frame["test_accuracy"],
+        s=90,
+        color="#c96f3b",
+        edgecolors="white",
+        linewidths=1.2,
+    )
+    for _, row in results_frame.iterrows():
+        plt.annotate(f"λ={row['lambda']}", (row["sparsity_percent"], row["test_accuracy"]), xytext=(6, 6), textcoords="offset points")
+    plt.title("Accuracy vs Sparsity Trade-off")
+    plt.xlabel("Sparsity Level (%)")
+    plt.ylabel("Test Accuracy")
+    plt.grid(alpha=0.25)
+    plt.tight_layout()
+    plt.savefig(destination, dpi=160)
+    plt.close()
+
+
+def plot_training_history(history_frame: pd.DataFrame, destination: str | Path) -> None:
+    destination = Path(destination)
+    destination.parent.mkdir(parents=True, exist_ok=True)
+
+    lambdas = history_frame["lambda"].unique().tolist()
+    fig, axes = plt.subplots(1, 2, figsize=(13, 5))
+    palette = ["#1768ac", "#c96f3b", "#2f855a", "#b83280", "#6b46c1"]
+
+    for index, lambda_value in enumerate(lambdas):
+        subset = history_frame[history_frame["lambda"] == lambda_value]
+        color = palette[index % len(palette)]
+        axes[0].plot(subset["epoch"], subset["train_loss"], marker="o", linewidth=1.8, color=color, label=f"λ={lambda_value}")
+        axes[0].plot(subset["epoch"], subset["validation_loss"], marker="x", linestyle="--", linewidth=1.5, color=color, alpha=0.85)
+        axes[1].plot(subset["epoch"], subset["train_accuracy"], marker="o", linewidth=1.8, color=color, label=f"λ={lambda_value}")
+        axes[1].plot(subset["epoch"], subset["validation_accuracy"], marker="x", linestyle="--", linewidth=1.5, color=color, alpha=0.85)
+
+    axes[0].set_title("Loss by Epoch")
+    axes[0].set_xlabel("Epoch")
+    axes[0].set_ylabel("Loss")
+    axes[0].xaxis.set_major_locator(MaxNLocator(integer=True))
+    axes[0].grid(alpha=0.25)
+
+    axes[1].set_title("Accuracy by Epoch")
+    axes[1].set_xlabel("Epoch")
+    axes[1].set_ylabel("Accuracy")
+    axes[1].xaxis.set_major_locator(MaxNLocator(integer=True))
+    axes[1].grid(alpha=0.25)
+
+    handles, labels = axes[1].get_legend_handles_labels()
+    fig.legend(handles, labels, loc="upper center", ncol=max(1, len(lambdas)))
+    fig.tight_layout(rect=(0, 0, 1, 0.92))
+    fig.savefig(destination, dpi=160)
+    plt.close(fig)
+
+
+def plot_layer_metrics(layer_summary: list[dict[str, float | int]], destination: str | Path) -> None:
+    destination = Path(destination)
+    destination.parent.mkdir(parents=True, exist_ok=True)
+
+    layer_indices = [item["layer_index"] for item in layer_summary]
+    mean_gates = [item["mean_gate_value"] for item in layer_summary]
+    sparsities = [item["sparsity_percent"] for item in layer_summary]
+
+    fig, axes = plt.subplots(1, 2, figsize=(12, 5))
+    axes[0].bar(layer_indices, mean_gates, color="#1768ac")
+    axes[0].set_title("Mean Gate Value per Layer")
+    axes[0].set_xlabel("Layer Index")
+    axes[0].set_ylabel("Mean Gate Value")
+    axes[0].xaxis.set_major_locator(MaxNLocator(integer=True))
+    axes[0].grid(axis="y", alpha=0.25)
+
+    axes[1].bar(layer_indices, sparsities, color="#c96f3b")
+    axes[1].set_title("Layer-wise Sparsity")
+    axes[1].set_xlabel("Layer Index")
+    axes[1].set_ylabel("Sparsity (%)")
+    axes[1].xaxis.set_major_locator(MaxNLocator(integer=True))
+    axes[1].grid(axis="y", alpha=0.25)
+
+    fig.tight_layout()
+    fig.savefig(destination, dpi=160)
+    plt.close(fig)

@@ -7,6 +7,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 import numpy as np
+import pandas as pd
 import torch
 import torch.nn as nn
 from torch.optim import AdamW
@@ -15,7 +16,15 @@ from tqdm import tqdm
 
 from self_pruning_network.data import build_cifar10_loaders
 from self_pruning_network.model import SelfPruningMLP
-from self_pruning_network.reporting import plot_gate_distribution, write_markdown_report, write_results_table
+from self_pruning_network.reporting import (
+    plot_accuracy_vs_sparsity,
+    plot_gate_distribution,
+    plot_lambda_metric,
+    plot_layer_metrics,
+    plot_training_history,
+    write_markdown_report,
+    write_results_table,
+)
 
 
 @dataclass
@@ -25,6 +34,7 @@ class RunResult:
     test_accuracy: float
     sparsity_percent: float
     checkpoint_path: str
+    gate_summary: dict[str, object]
 
     def to_dict(self) -> dict[str, float | str]:
         return {
@@ -99,6 +109,7 @@ def train_single_lambda(
 
     best_validation_accuracy = -1.0
     best_state: dict[str, torch.Tensor] | None = None
+    history: list[dict[str, float]] = []
     checkpoint_path = output_dir / "checkpoints" / f"best_lambda_{lambda_value:.4f}.pt"
     checkpoint_path.parent.mkdir(parents=True, exist_ok=True)
 
@@ -131,6 +142,17 @@ def train_single_lambda(
             )
 
         validation_metrics = evaluate(model, validation_loader, device, criterion, lambda_value)
+        history.append(
+            {
+                "lambda": lambda_value,
+                "epoch": epoch,
+                "train_loss": running_loss / sample_count,
+                "train_accuracy": running_accuracy / sample_count,
+                "validation_loss": validation_metrics["loss"],
+                "validation_accuracy": validation_metrics["accuracy"],
+                "validation_sparsity_percent": validation_metrics["sparsity_percent"],
+            }
+        )
         if validation_metrics["accuracy"] > best_validation_accuracy:
             best_validation_accuracy = validation_metrics["accuracy"]
             best_state = {
@@ -157,6 +179,7 @@ def train_single_lambda(
             },
             "metrics": test_metrics,
             "gate_summary": gate_summary.to_dict(),
+            "training_history": history,
             "model_state_dict": model.state_dict(),
         },
         checkpoint_path,
@@ -169,8 +192,10 @@ def train_single_lambda(
             test_accuracy=test_metrics["accuracy"],
             sparsity_percent=test_metrics["sparsity_percent"],
             checkpoint_path=str(checkpoint_path),
+            gate_summary=gate_summary.to_dict(),
         ),
         model,
+        history,
     )
 
 
@@ -215,11 +240,12 @@ def main() -> int:
     )
 
     results: list[RunResult] = []
+    all_history: list[dict[str, float]] = []
     best_model: SelfPruningMLP | None = None
     best_result: RunResult | None = None
 
     for lambda_value in args.lambdas:
-        result, model = train_single_lambda(
+        result, model, history = train_single_lambda(
             lambda_value=lambda_value,
             train_loader=train_loader,
             validation_loader=validation_loader,
@@ -235,6 +261,7 @@ def main() -> int:
             output_dir=output_dir,
         )
         results.append(result)
+        all_history.extend(history)
 
         if best_result is None or result.validation_accuracy > best_result.validation_accuracy:
             best_result = result
@@ -246,6 +273,8 @@ def main() -> int:
         [result.to_dict() for result in results],
         reports_dir / "results.csv",
     )
+    history_frame = pd.DataFrame(all_history)
+    history_frame.to_csv(reports_dir / "training_history.csv", index=False)
     write_markdown_report(
         results_frame=results_frame,
         best_lambda=best_result.lambda_value,
@@ -258,6 +287,33 @@ def main() -> int:
         destination=reports_dir / "gate_distribution.png",
         title=f"Gate Distribution for lambda={best_result.lambda_value}",
     )
+    plot_lambda_metric(
+        results_frame=results_frame,
+        metric_column="test_accuracy",
+        destination=reports_dir / "lambda_vs_test_accuracy.png",
+        title="Lambda vs Test Accuracy",
+        y_label="Test Accuracy",
+    )
+    plot_lambda_metric(
+        results_frame=results_frame,
+        metric_column="sparsity_percent",
+        destination=reports_dir / "lambda_vs_sparsity.png",
+        title="Lambda vs Sparsity",
+        y_label="Sparsity Level (%)",
+    )
+    plot_accuracy_vs_sparsity(
+        results_frame=results_frame,
+        destination=reports_dir / "accuracy_vs_sparsity.png",
+    )
+    if not history_frame.empty:
+        plot_training_history(
+            history_frame=history_frame,
+            destination=reports_dir / "training_history.png",
+        )
+    plot_layer_metrics(
+        layer_summary=best_result.gate_summary["layers"],
+        destination=reports_dir / "layer_metrics.png",
+    )
     (reports_dir / "summary.json").write_text(
         json.dumps(
             {
@@ -266,6 +322,18 @@ def main() -> int:
                 "best_test_accuracy": best_result.test_accuracy,
                 "best_sparsity_percent": best_result.sparsity_percent,
                 "best_checkpoint": best_result.checkpoint_path,
+                "report_files": [
+                    "results.md",
+                    "results.csv",
+                    "summary.json",
+                    "training_history.csv",
+                    "gate_distribution.png",
+                    "lambda_vs_test_accuracy.png",
+                    "lambda_vs_sparsity.png",
+                    "accuracy_vs_sparsity.png",
+                    "training_history.png",
+                    "layer_metrics.png",
+                ],
             },
             indent=2,
         ),

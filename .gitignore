@@ -5,10 +5,6 @@ __pycache__/
 .ruff_cache/
 build/
 dist/
-artifacts/
-artifacts_*/
-data/
-checkpoints/
 *.pyc
 *.pyo
 *.pyd
@@ -17,5 +13,6 @@ checkpoints/
 *.egg-info/
 .env
 *.log
+.Rhistory
 
 .vercel
