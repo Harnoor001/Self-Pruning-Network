@@ -203,7 +203,7 @@ This makes it easy to explain:
 - how sparsity affects classification accuracy
 - which `lambda` offers the best trade-off
 
-## Interview Talking Points
+## Results
 
 - Pruning is learned during training rather than applied afterward
 - The gating mechanism stays differentiable, so weights and gates can be optimized jointly
