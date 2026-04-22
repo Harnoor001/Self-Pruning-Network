@@ -1,0 +1,2 @@
+lambda,validation_accuracy,test_accuracy,sparsity_percent,checkpoint_path
+0.0001,0.25,0.0938,0.0,artifacts_smoke\checkpoints\best_lambda_0.0001.pt

@@ -1,0 +1,19 @@
+{
+  "best_lambda": 0.0001,
+  "best_validation_accuracy": 0.0833333358168602,
+  "best_test_accuracy": 0.140625,
+  "best_sparsity_percent": 0.0,
+  "best_checkpoint": "artifacts_graphs_smoke\\checkpoints\\best_lambda_0.0001.pt",
+  "report_files": [
+    "results.md",
+    "results.csv",
+    "summary.json",
+    "training_history.csv",
+    "gate_distribution.png",
+    "lambda_vs_test_accuracy.png",
+    "lambda_vs_sparsity.png",
+    "accuracy_vs_sparsity.png",
+    "training_history.png",
+    "layer_metrics.png"
+  ]
+}
