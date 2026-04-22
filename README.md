@@ -1,6 +1,6 @@
 # Self-Pruning Neural Network
 
-An interview-ready implementation of the Tredence AI Engineer case study: a feed-forward neural network that learns to prune its own connections during training.
+An implementation of the Tredence AI Engineer case study: a feed-forward neural network that learns to prune its own connections during training.
 
 Instead of pruning after training, this project attaches a learnable gate to every weight, trains those gates jointly with the classifier, and applies an L1 sparsity objective to encourage unnecessary connections to shrink toward zero.
 
@@ -203,28 +203,8 @@ This makes it easy to explain:
 - how sparsity affects classification accuracy
 - which `lambda` offers the best trade-off
 
-## Interview Talking Points
-
-- Pruning is learned during training rather than applied afterward
-- The gating mechanism stays differentiable, so weights and gates can be optimized jointly
-- The project is organized like a small production ML system instead of a single notebook or script
-- The API layer demonstrates practical AI engineering beyond model training alone
-- The report and plots make the sparsity-accuracy trade-off easy to communicate
-
 ## Limitations
 
 - The current model is a feed-forward MLP, so image accuracy is lower than a CNN-based approach
 - The API is suitable for local/demo inference, but the PyTorch dependency stack is too large for lightweight serverless deployment targets such as Vercel Functions
 - Predictions on arbitrary real-world images may be uncertain because CIFAR-10 images are low resolution and domain-specific
-
-## Submission Checklist
-
-- Train at least three `lambda` settings
-- Review `artifacts/reports/results.md`
-- Keep large checkpoints out of GitHub if they exceed repository-friendly size
-- Include the GitHub repo link in your application
-- Be ready to explain the gating mechanism, sparsity loss, and trade-off analysis
-
-## License
-
-This project was built as a case-study submission and learning project. Add a license if you plan to reuse or distribute it publicly.
