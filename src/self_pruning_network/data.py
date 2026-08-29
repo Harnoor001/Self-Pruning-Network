@@ -73,6 +73,7 @@ def build_cifar10_loaders(
         "batch_size": batch_size,
         "num_workers": num_workers,
         "pin_memory": torch.cuda.is_available(),
+        "generator": torch.Generator().manual_seed(seed),
     }
     train_loader = DataLoader(train_dataset, shuffle=True, **common)
     validation_loader = DataLoader(validation_dataset, shuffle=False, **common)

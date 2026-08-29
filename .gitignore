@@ -16,3 +16,6 @@ dist/
 .Rhistory
 
 .vercel
+
+# Model checkpoints are generated locally; reports and plots are versioned.
+artifacts/**/checkpoints/
