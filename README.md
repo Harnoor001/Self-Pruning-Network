@@ -200,24 +200,4 @@ Run:
 
 The final repository test run passed 15 tests. Tests cover dense forward behavior, soft gate gradients, gate conversion, threshold masks, exact zeroing, fixed-mask enforcement, target sparsity, reproducible random and learned masks, connection/MAC accounting, checkpoint reload, and accuracy-drop calculation.
 
-## Limitations
 
-- This is an MLP rather than a CNN, so it has limited image inductive bias.
-- The full 20/40/60/80 learned-vs-random sweep was not run across all seeds because the full CPU benchmark is expensive. The key 60% learned/random comparison was run at seeds 42, 123, and 2024; the full final learned benchmark remains the seed-42 run above.
-- Pruning is unstructured and retains dense tensor shapes.
-- Logical sparsity does not imply storage compression or hardware acceleration.
-- The final benchmark uses five training epochs and is a reproducible engineering benchmark, not a state-of-the-art CIFAR-10 result.
-
-## RESUME-SAFE CLAIMS
-
-- Implemented differentiable per-weight gating with explicit persistent hard-pruning masks.
-- Evaluated learned gate-based pruning against a global random-pruning baseline at identical 60% logical sparsity, with fixed-mask fine-tuning and three seeds.
-- At 60% logical sparsity, learned pruning averaged 51.6733% ± 0.1890% test accuracy versus 50.8000% ± 0.2821% for random pruning across seeds 42, 123, and 2024; the paired mean advantage was 0.8733 pp.
-
-## CLAIMS THAT SHOULD NOT BE MADE
-
-- Do not claim that 60% sparsity makes the model 60% faster.
-- Do not claim proportional checkpoint-size or memory reduction; tensors remain dense.
-- Do not claim that the measured theoretical MAC reduction is a measured runtime speedup.
-- Do not describe the 0.8733 pp learned-vs-random difference as statistically significant or universal.
-- Do not describe the partial 60%-only multi-seed ablation as a complete 20/40/60/80 random-pruning sweep.
