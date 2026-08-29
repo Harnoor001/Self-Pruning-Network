@@ -1,0 +1,9 @@
+model_type,lambda,target_sparsity_percent,validation_accuracy,test_accuracy,sparsity_percent,density_percent,total_weights,active_weights,pruned_weights,reference_label,reference_test_accuracy,accuracy_drop_percent_points,pre_finetune_test_accuracy,checkpoint_path
+dense,,0.0,0.5166,0.5221,0.0,100.0,8918016,8918016,0,dense,0.5221,0.0,,artifacts\final_benchmark\checkpoints\dense_lambda_0.0000.pt
+soft,0.0,,0.5174,0.5228,0.0,100.0,8918016,8918016,0,dense,0.5221,-0.07,,artifacts\final_benchmark\checkpoints\soft_lambda_0.0000.pt
+soft,0.001,,0.515,0.5227,0.0,100.0,8918016,8918016,0,dense,0.5221,-0.06,,artifacts\final_benchmark\checkpoints\soft_lambda_0.0010.pt
+hard,0.0,0.0,0.5174,0.521,0.0,100.0,8918016,8918016,0,soft_lambda_0.0,0.5228,0.18,0.507,artifacts\final_benchmark\checkpoints\hard_target_0.0000.pt
+hard,0.0,20.0,0.5252,0.5208,19.999998,80.000002,8918016,7134413,1783603,soft_lambda_0.0,0.5228,0.2,0.5061,artifacts\final_benchmark\checkpoints\hard_target_0.2000.pt
+hard,0.0,40.0,0.5176,0.5187,39.999996,60.000004,8918016,5350810,3567206,soft_lambda_0.0,0.5228,0.41,0.5065,artifacts\final_benchmark\checkpoints\hard_target_0.4000.pt
+hard,0.0,60.0,0.515,0.5184,60.000004,39.999996,8918016,3567206,5350810,soft_lambda_0.0,0.5228,0.44,0.498,artifacts\final_benchmark\checkpoints\hard_target_0.6000.pt
+hard,0.0,80.0,0.4854,0.4911,80.000002,19.999998,8918016,1783603,7134413,soft_lambda_0.0,0.5228,3.17,0.4015,artifacts\final_benchmark\checkpoints\hard_target_0.8000.pt

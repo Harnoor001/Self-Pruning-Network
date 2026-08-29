@@ -430,7 +430,10 @@ def _load_checkpoint_model() -> SelfPruningMLP:
         dropout=config.get("dropout", 0.3),
         use_batchnorm=config.get("use_batchnorm", True),
     )
-    model.load_state_dict(payload["model_state_dict"])
+    model.load_state_dict(payload["model_state_dict"], strict=False)
+    pruning = payload.get("pruning", {})
+    if pruning.get("mode") == "hard":
+        model.set_mode("hard")
     model.eval()
     return model
 
@@ -498,12 +501,24 @@ def model_summary() -> dict[str, object]:
         raise HTTPException(status_code=500, detail=str(exc)) from exc
 
     summary: GateSummary = model.gate_summary()
+    efficiency = model.efficiency_summary()
     return {
         "layers": summary.layers,
         "mean_gate_value": summary.mean_gate_value,
         "sparsity_percent": summary.sparsity_percent,
         "total_weights": summary.total_weights,
         "pruned_weights": summary.pruned_weights,
+        "active_weights": summary.active_weights,
+        "density_percent": summary.density_percent,
+        "threshold": summary.threshold,
+        "total_dense_parameter_slots": efficiency["total_dense_parameter_slots"],
+        "active_connections": efficiency["active_connections"],
+        "pruned_connections": efficiency["pruned_connections"],
+        "logical_connectivity_reduction_percent": efficiency["logical_connectivity_reduction_percent"],
+        "estimated_dense_macs": efficiency["estimated_dense_macs"],
+        "estimated_effective_macs": efficiency["estimated_effective_macs"],
+        "theoretical_mac_reduction_percent": efficiency["theoretical_mac_reduction_percent"],
+        "layer_efficiency": efficiency["layers"],
     }
 
 

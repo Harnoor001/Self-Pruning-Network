@@ -21,11 +21,34 @@ def write_markdown_report(
     best_accuracy: float,
     best_sparsity: float,
     destination: str | Path,
+    dense_accuracy: float | None = None,
+    pruning_enabled: bool = False,
+    experiment_config: dict[str, object] | None = None,
 ) -> None:
     destination = Path(destination)
     destination.parent.mkdir(parents=True, exist_ok=True)
 
     markdown_table = results_frame.to_markdown(index=False)
+    hard = results_frame[results_frame["model_type"] == "hard"].copy() if "model_type" in results_frame else pd.DataFrame()
+    frontier_rows = []
+    if not hard.empty:
+        for _, candidate in hard.iterrows():
+            dominated = ((hard["test_accuracy"] >= candidate["test_accuracy"]) &
+                         (hard["sparsity_percent"] >= candidate["sparsity_percent"]) &
+                         ((hard["test_accuracy"] > candidate["test_accuracy"]) |
+                          (hard["sparsity_percent"] > candidate["sparsity_percent"]))).any()
+            if not dominated:
+                frontier_rows.append(candidate)
+    frontier = pd.DataFrame(frontier_rows)
+    frontier_text = frontier.to_markdown(index=False) if not frontier.empty else "No hard-pruned configurations were evaluated."
+    recovery = hard[["target_sparsity_percent", "pre_finetune_test_accuracy", "test_accuracy"]].copy() if not hard.empty else pd.DataFrame()
+    recovery_text = recovery.to_markdown(index=False) if not recovery.empty else "No hard-pruned fine-tuning runs were evaluated."
+    config_text = ""
+    if experiment_config is not None:
+        config_text = "## Experiment configuration\n\n```json\n" + pd.Series(experiment_config).to_json(indent=2) + "\n```\n\n"
+    dense_section = ""
+    if dense_accuracy is not None:
+        dense_section = f"## Dense reference\n\nSeparately trained dense-mode test accuracy: **{dense_accuracy:.6f}**. Accuracy drops for soft models are measured against this dense reference; hard-pruned drops are measured against the corresponding unpruned soft model.\n\n"
     report = f"""# Self-Pruning Neural Network Report
 
 ## Summary
@@ -40,15 +63,35 @@ The L1 penalty adds a direct cost for keeping gates open.
 Since the gates are bounded in `(0, 1)`, the optimizer can lower the total loss by pushing many gate values toward zero.
 That creates a sparse network where only useful connections remain active enough to justify their cost.
 
-## Results
+## Method
+
+The model learns `W' = W * sigmoid(S)` jointly with classification. When pruning is enabled, gate importance is converted to a persistent binary mask. A hard-pruned forward pass uses `W_hard = W * M`, and fine-tuning reapplies `M` after every optimizer step.
+
+Logical sparsity is the fraction of masked connections. The tensors are still stored densely, so these results do not claim proportional storage savings or hardware speedup.
+
+{dense_section}{config_text}## Results
 
 Best lambda: `{best_lambda}`
 
 Best test accuracy: `{best_accuracy:.4f}`
 
-Best sparsity level: `{best_sparsity:.2f}%`
+Best soft-model mask sparsity: `{best_sparsity:.2f}%`
+
+Pruning enabled: `{pruning_enabled}`
 
 {markdown_table}
+
+## Accuracy/sparsity Pareto frontier
+
+The non-dominated hard-pruned configurations are listed below. A configuration is non-dominated when no evaluated hard-pruned result has both higher or equal accuracy and higher or equal sparsity with one strict improvement.
+
+{frontier_text}
+
+## Fine-tuning recovery
+
+The table below records test accuracy immediately after applying the hard mask and after the configured fine-tuning stage. Accuracy-drop values in the main table use the post-fine-tuning accuracy.
+
+{recovery_text}
 """
     destination.write_text(report, encoding="utf-8")
 
@@ -80,7 +123,10 @@ def plot_lambda_metric(
     ordered = results_frame.sort_values("lambda")
     plt.figure(figsize=(8, 5))
     plt.plot(ordered["lambda"], ordered[metric_column], marker="o", linewidth=2.2, color="#1768ac")
-    plt.xscale("log")
+    if (ordered["lambda"] <= 0).any():
+        plt.xscale("symlog", linthresh=1e-5)
+    else:
+        plt.xscale("log")
     plt.title(title)
     plt.xlabel("Lambda")
     plt.ylabel(y_label)

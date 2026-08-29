@@ -1,0 +1,4 @@
+seed,target_sparsity_percent,learned_test_accuracy_percent,random_test_accuracy_percent,learned_advantage_percent_points
+42,60.0,51.82,50.84,0.9799999999999969
+123,60.0,51.74,51.06,0.6799999999999997
+2024,60.0,51.46,50.5,0.9600000000000009
