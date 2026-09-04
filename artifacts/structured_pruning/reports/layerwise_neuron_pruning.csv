@@ -1,0 +1,13 @@
+model,layer,layer_type,original_neurons,remaining_neurons,pruned_neurons,pruning_percent
+Structured 20%,1,hidden,2048,1639,409,19.970703125
+Structured 20%,2,hidden,1024,820,204,19.921875
+Structured 20%,3,hidden,512,410,102,19.921875
+Structured 20%,4,output,10,10,0,0.0
+Structured 40%,1,hidden,2048,1229,819,39.990234375
+Structured 40%,2,hidden,1024,615,409,39.94140625
+Structured 40%,3,hidden,512,308,204,39.84375
+Structured 40%,4,output,10,10,0,0.0
+Structured 60%,1,hidden,2048,820,1228,59.9609375
+Structured 60%,2,hidden,1024,410,614,59.9609375
+Structured 60%,3,hidden,512,205,307,59.9609375
+Structured 60%,4,output,10,10,0,0.0

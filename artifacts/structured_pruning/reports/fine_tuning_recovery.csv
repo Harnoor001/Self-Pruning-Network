@@ -1,0 +1,6 @@
+model,target_neuron_sparsity_percent,pre_finetune_test_accuracy_percent,test_accuracy_percent,fine_tune_recovery_percent_points
+Dense,,,52.21,
+Unstructured 60%,,,51.839999999999996,
+Structured 20%,20.0,37.89,52.89,15.0
+Structured 40%,40.0,28.02,52.72,24.7
+Structured 60%,60.0,21.75,52.05,30.299999999999997

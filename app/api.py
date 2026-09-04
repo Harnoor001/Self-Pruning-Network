@@ -18,7 +18,7 @@ SRC_DIR = PROJECT_ROOT / "src"
 if str(SRC_DIR) not in sys.path:
     sys.path.insert(0, str(SRC_DIR))
 
-from self_pruning_network.model import GateSummary, SelfPruningMLP
+from self_pruning_network.model import GateSummary, SelfPruningMLP, StructuredPrunedMLP
 
 
 app = FastAPI(title="Self-Pruning Network API", version="0.1.0")
@@ -421,8 +421,12 @@ def _load_checkpoint_model() -> SelfPruningMLP:
     if not path.exists():
         raise RuntimeError(f"Checkpoint not found: {path}")
 
-    payload = torch.load(path, map_location="cpu")
+    payload = torch.load(path, map_location="cpu", weights_only=False)
     config = payload["model_config"]
+    if payload.get("model_type") == "structured" or config.get("model_type") == "structured":
+        model = StructuredPrunedMLP.from_checkpoint(payload)
+        model.eval()
+        return model
     model = SelfPruningMLP(
         input_dim=config["input_dim"],
         hidden_dims=config["hidden_dims"],
@@ -499,6 +503,26 @@ def model_summary() -> dict[str, object]:
         model = _load_checkpoint_model()
     except RuntimeError as exc:
         raise HTTPException(status_code=500, detail=str(exc)) from exc
+
+    if isinstance(model, StructuredPrunedMLP):
+        efficiency = model.efficiency_summary()
+        return {
+            "model_type": "structured",
+            "architecture": [model.input_dim, *model.hidden_dims, model.num_classes],
+            "source_architecture": [model.input_dim, *model.source_hidden_dims, model.num_classes],
+            "hidden_dims": model.hidden_dims,
+            "total_parameters": efficiency["total_parameters"],
+            "trainable_parameters": efficiency["trainable_parameters"],
+            "active_parameters": efficiency["active_parameters"],
+            "dense_parameter_reference": efficiency["dense_parameter_reference"],
+            "parameter_reduction_percent": efficiency["parameter_reduction_percent"],
+            "source_dense_macs": efficiency["source_dense_macs"],
+            "estimated_dense_macs": efficiency["estimated_dense_macs"],
+            "estimated_effective_macs": efficiency["estimated_effective_macs"],
+            "mac_reduction_percent": efficiency["mac_reduction_percent"],
+            "keep_indices": model.keep_indices,
+            "layer_efficiency": efficiency["layers"],
+        }
 
     summary: GateSummary = model.gate_summary()
     efficiency = model.efficiency_summary()

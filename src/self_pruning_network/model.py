@@ -321,3 +321,279 @@ class SelfPruningMLP(nn.Module):
             density_percent=((total_weights - pruned_weights) / total_weights) * 100.0 if total_weights else 0.0,
             threshold=threshold,
         )
+
+
+def trainable_parameter_count(model: nn.Module) -> int:
+    """Count all trainable tensor entries, including auxiliary gate scores."""
+    return sum(parameter.numel() for parameter in model.parameters() if parameter.requires_grad)
+
+
+def deployable_parameter_count(model: nn.Module) -> int:
+    """Count trainable deployment tensors while excluding gate-learning auxiliaries."""
+    return sum(
+        parameter.numel()
+        for name, parameter in model.named_parameters()
+        if parameter.requires_grad and "gate_scores" not in name
+    )
+
+
+class StructuredPrunedMLP(nn.Module):
+    """MLP with physically compact hidden dimensions after neuron pruning.
+
+    Neuron importance is derived from the mean sigmoid gate value across the
+    output row associated with each hidden neuron in the source model. The
+    keep indices are stored as metadata and are sorted to make weight transfer
+    and checkpoint reconstruction deterministic.
+    """
+
+    model_type = "structured"
+
+    def __init__(
+        self,
+        input_dim: int,
+        hidden_dims: list[int],
+        num_classes: int = 10,
+        dropout: float = 0.3,
+        use_batchnorm: bool = True,
+        *,
+        source_hidden_dims: list[int] | None = None,
+        keep_indices: list[list[int]] | None = None,
+        target_sparsity: float | None = None,
+        importance_scores: list[list[float]] | None = None,
+    ) -> None:
+        super().__init__()
+        if not hidden_dims or any(width < 1 for width in hidden_dims):
+            raise ValueError("hidden_dims must contain at least one positive width")
+        if not 0.0 <= dropout < 1.0:
+            raise ValueError("dropout must be between 0 and 1")
+        self.input_dim = int(input_dim)
+        self.hidden_dims = [int(width) for width in hidden_dims]
+        self.num_classes = int(num_classes)
+        self.dropout = float(dropout)
+        self.use_batchnorm = bool(use_batchnorm)
+        self.source_hidden_dims = list(source_hidden_dims or hidden_dims)
+        self.keep_indices = [list(map(int, values)) for values in (keep_indices or [])]
+        self.target_sparsity = target_sparsity
+        self.importance_scores = importance_scores or []
+
+        dimensions = [self.input_dim, *self.hidden_dims, self.num_classes]
+        self.linear_layers = nn.ModuleList(
+            [nn.Linear(dimensions[index], dimensions[index + 1]) for index in range(len(dimensions) - 1)]
+        )
+        self.batch_norms = nn.ModuleList(
+            [nn.BatchNorm1d(width) for width in self.hidden_dims] if self.use_batchnorm else []
+        )
+
+    def forward(self, inputs: torch.Tensor) -> torch.Tensor:
+        activations = inputs.view(inputs.size(0), -1)
+        for index, layer in enumerate(self.linear_layers):
+            activations = layer(activations)
+            if index < len(self.hidden_dims):
+                if self.use_batchnorm:
+                    activations = self.batch_norms[index](activations)
+                activations = F.gelu(activations)
+                activations = F.dropout(activations, p=self.dropout, training=self.training)
+        return activations
+
+    def sparsity_loss(self) -> torch.Tensor:
+        return next(self.parameters()).new_zeros(())
+
+    @torch.no_grad()
+    def enforce_masks(self) -> None:
+        """Compatibility no-op: compact models have no removable mask."""
+        return None
+
+    def gate_summary(self, threshold: float | None = None) -> GateSummary:
+        layers: list[dict[str, float | int]] = []
+        total_weights = 0
+        for index, layer in enumerate(self.linear_layers):
+            count = int(layer.weight.numel())
+            total_weights += count
+            layers.append({
+                "layer_index": index,
+                "weight_count": count,
+                "pruned_count": 0,
+                "mean_gate_value": 1.0,
+                "active_count": count,
+                "density_percent": 100.0,
+                "sparsity_percent": 0.0,
+            })
+        return GateSummary(
+            layers=layers,
+            mean_gate_value=1.0,
+            sparsity_percent=0.0,
+            total_weights=total_weights,
+            pruned_weights=0,
+            active_weights=total_weights,
+            density_percent=100.0,
+            threshold=threshold,
+        )
+
+    def parameter_summary(self) -> dict[str, int | float]:
+        total = trainable_parameter_count(self)
+        dense_total = self._source_parameter_count()
+        return {
+            "total_parameters": total,
+            "trainable_parameters": total,
+            "active_parameters": total,
+            "pruned_parameters": 0,
+            "dense_parameter_reference": dense_total,
+            "parameter_reduction_percent": _percentage(dense_total - total, dense_total),
+            "total_connections": sum(layer.weight.numel() for layer in self.linear_layers),
+        }
+
+    def _source_parameter_count(self) -> int:
+        dimensions = [self.input_dim, *self.source_hidden_dims, self.num_classes]
+        linear_parameters = sum(dimensions[index] * dimensions[index + 1] + dimensions[index + 1]
+                                for index in range(len(dimensions) - 1))
+        batch_norm_parameters = sum(2 * width for width in self.source_hidden_dims) if self.use_batchnorm else 0
+        return linear_parameters + batch_norm_parameters
+
+    def _source_mac_count(self) -> int:
+        dimensions = [self.input_dim, *self.source_hidden_dims, self.num_classes]
+        return sum(dimensions[index] * dimensions[index + 1] for index in range(len(dimensions) - 1))
+
+    def efficiency_summary(self) -> dict[str, object]:
+        layers: list[dict[str, int | float | str]] = []
+        dense_macs = 0
+        parameter_count = trainable_parameter_count(self)
+        dense_parameter_count = self._source_parameter_count()
+        source_macs = self._source_mac_count()
+        connection_count = 0
+        for index, layer in enumerate(self.linear_layers):
+            total = int(layer.weight.numel())
+            macs = int(layer.in_features * layer.out_features)
+            connection_count += total
+            dense_macs += macs
+            layers.append({
+                "layer_name": f"layer{index + 1}",
+                "layer_index": index,
+                "input_features": int(layer.in_features),
+                "output_features": int(layer.out_features),
+                "total_weights": total,
+                "active_weights": total,
+                "pruned_weights": 0,
+                "sparsity_percent": 0.0,
+                "density_percent": 100.0,
+                "dense_macs": macs,
+                "estimated_effective_macs": macs,
+            })
+        return {
+            "total_dense_parameter_slots": connection_count,
+            "total_weights": connection_count,
+            "active_connections": connection_count,
+            "active_weights": connection_count,
+            "pruned_connections": 0,
+            "pruned_weights": 0,
+            "density_percent": 100.0,
+            "sparsity_percent": 0.0,
+            "logical_connectivity_reduction_percent": 0.0,
+            "estimated_dense_macs": dense_macs,
+            "estimated_effective_macs": dense_macs,
+            "theoretical_mac_reduction_percent": 0.0,
+            "source_dense_macs": source_macs,
+            "mac_reduction_percent": _percentage(source_macs - dense_macs, source_macs),
+            "dense_parameter_reference": dense_parameter_count,
+            "total_parameters": parameter_count,
+            "trainable_parameters": parameter_count,
+            "active_parameters": parameter_count,
+            "pruned_parameters": 0,
+            "parameter_reduction_percent": _percentage(dense_parameter_count - parameter_count, dense_parameter_count),
+            "layers": layers,
+        }
+
+    def structured_summary(self) -> dict[str, object]:
+        efficiency = self.efficiency_summary()
+        return {
+            "model_type": self.model_type,
+            "architecture": [self.input_dim, *self.hidden_dims, self.num_classes],
+            "source_architecture": [self.input_dim, *self.source_hidden_dims, self.num_classes],
+            "hidden_dims": list(self.hidden_dims),
+            "source_hidden_dims": list(self.source_hidden_dims),
+            "keep_indices": [list(values) for values in self.keep_indices],
+            "target_sparsity": self.target_sparsity,
+            "importance_scores": self.importance_scores,
+            **efficiency,
+        }
+
+    @classmethod
+    @torch.no_grad()
+    def from_self_pruning(cls, source: SelfPruningMLP, target_sparsity: float) -> "StructuredPrunedMLP":
+        if not 0.0 <= target_sparsity < 1.0:
+            raise ValueError("target_sparsity must be between 0 and 1 (exclusive of 1)")
+        if len(source.prunable_layers) != len(source.hidden_dims) + 1:
+            raise ValueError("source model must contain one prunable layer per hidden and output layer")
+
+        keep_indices: list[list[int]] = []
+        importance_scores: list[list[float]] = []
+        compact_hidden_dims: list[int] = []
+        for layer, hidden_width in zip(source.prunable_layers[:-1], source.hidden_dims):
+            importance = layer.gates().mean(dim=1)
+            # Floor removal so a fractional target never prunes more neurons
+            # than requested; at least one neuron is always retained.
+            prune_count = int(hidden_width * target_sparsity)
+            keep_count = max(1, hidden_width - prune_count)
+            order = torch.argsort(importance, descending=True, stable=True)
+            selected = order[:keep_count].sort().values
+            keep_indices.append([int(index) for index in selected.cpu().tolist()])
+            importance_scores.append([float(value) for value in importance.detach().cpu().tolist()])
+            compact_hidden_dims.append(keep_count)
+
+        compact = cls(
+            input_dim=source.input_dim,
+            hidden_dims=compact_hidden_dims,
+            num_classes=source.num_classes,
+            dropout=source.dropout,
+            use_batchnorm=source.use_batchnorm,
+            source_hidden_dims=list(source.hidden_dims),
+            keep_indices=keep_indices,
+            target_sparsity=float(target_sparsity),
+            importance_scores=importance_scores,
+        )
+        source_batch_norms = [module for module in source.network if isinstance(module, nn.BatchNorm1d)]
+        previous_keep = torch.arange(source.input_dim, dtype=torch.long)
+        for index, (source_layer, compact_layer) in enumerate(zip(source.prunable_layers, compact.linear_layers)):
+            if index < len(source.hidden_dims):
+                output_keep = torch.tensor(keep_indices[index], dtype=torch.long)
+            else:
+                output_keep = torch.arange(source.num_classes, dtype=torch.long)
+            source_index = output_keep.to(source_layer.weight.device)
+            input_index = previous_keep.to(source_layer.weight.device)
+            with torch.no_grad():
+                compact_layer.weight.copy_(source_layer.weight.detach()[source_index][:, input_index])
+                compact_layer.bias.copy_(source_layer.bias.detach()[source_index])
+            if index < len(source.hidden_dims) and source.use_batchnorm:
+                source_bn = source_batch_norms[index]
+                compact_bn = compact.batch_norms[index]
+                bn_index = output_keep.to(source_bn.weight.device)
+                with torch.no_grad():
+                    compact_bn.weight.copy_(source_bn.weight.detach()[bn_index])
+                    compact_bn.bias.copy_(source_bn.bias.detach()[bn_index])
+                    compact_bn.running_mean.copy_(source_bn.running_mean.detach()[bn_index])
+                    compact_bn.running_var.copy_(source_bn.running_var.detach()[bn_index])
+                    compact_bn.num_batches_tracked.copy_(source_bn.num_batches_tracked)
+            previous_keep = output_keep
+        compact.train(source.training)
+        return compact
+
+    @classmethod
+    def from_checkpoint(cls, payload: dict[str, object]) -> "StructuredPrunedMLP":
+        config = payload["model_config"]
+        if not isinstance(config, dict):
+            raise ValueError("structured checkpoint model_config must be a dictionary")
+        metadata = payload.get("structured_pruning", {})
+        if not isinstance(metadata, dict):
+            metadata = {}
+        model = cls(
+            input_dim=int(config["input_dim"]),
+            hidden_dims=[int(value) for value in config["hidden_dims"]],
+            num_classes=int(config["num_classes"]),
+            dropout=float(config.get("dropout", 0.3)),
+            use_batchnorm=bool(config.get("use_batchnorm", True)),
+            source_hidden_dims=[int(value) for value in metadata.get("source_hidden_dims", config["hidden_dims"])],
+            keep_indices=metadata.get("keep_indices", []),
+            target_sparsity=metadata.get("target_sparsity"),
+            importance_scores=metadata.get("importance_scores", []),
+        )
+        model.load_state_dict(payload["model_state_dict"])
+        return model
