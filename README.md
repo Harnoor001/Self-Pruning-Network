@@ -17,7 +17,7 @@ Full CIFAR-10, seed 42, CPU (1 thread), batch size 1. All accuracy deltas are re
 
 Structured rows are single fine-tuning runs. Repeating the same seed-42 fine-tuning gave 51.29% to 52.05% for structured 60% (see [Measurement notes](#measurement-notes)), so treat the 3-seed means below as the more reliable figures.
 
-![Latency comparison](docs/pruning_latency_chart.png)
+![Latency comparison](pruning_latency_chart.png)
 
 **Across 3 seeds (42, 123, 2024):**
 
