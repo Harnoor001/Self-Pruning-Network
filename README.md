@@ -1,6 +1,55 @@
 # Self-Pruning Neural Network
 
-A PyTorch CIFAR-10 MLP that learns per-connection gate importance, converts those scores into explicit binary masks, hard-prunes connections, and fine-tunes with a fixed mask.
+A PyTorch CIFAR-10 MLP that learns per-connection gate importance, converts those scores into explicit binary masks, hard-prunes connections, and fine-tunes with a fixed mask. A structured variant removes whole neurons and builds a physically smaller model.
+
+> **Status: work in progress.** This README reflects the current state of the project (last updated September 2026). Results are from a single-machine CPU setup and will be extended; see the [Roadmap](#roadmap).
+
+## Key results
+
+Full CIFAR-10, seed 42, CPU (1 thread), batch size 1. All accuracy deltas are relative to the **dense baseline (52.21%)**.
+
+| Model | Test accuracy | Δ vs dense | Deployable parameters | Mean latency | Speed vs dense |
+|---|---:|---:|---:|---:|---:|
+| Dense | 52.21% | n/a | 8.93M | 4.05 ms | 1.0x |
+| Unstructured 60% (masked) | 51.84% | -0.37 pp | 8.93M (no change) | 12.93 ms | 3.2x **slower** |
+| Structured 40% (neurons removed) | 52.72% | +0.51 pp | 4.73M (-47%) | 0.65 ms | 6.3x faster |
+| Structured 60% (neurons removed) | 52.05% | -0.16 pp | 2.95M (-67%) | 0.51 ms | 8.0x faster |
+
+Structured rows are single fine-tuning runs. Repeating the same seed-42 fine-tuning gave 51.29% to 52.05% for structured 60% (see [Measurement notes](#measurement-notes)), so treat the 3-seed means below as the more reliable figures.
+
+![Latency comparison](docs/pruning_latency_chart.png)
+
+**Across 3 seeds (42, 123, 2024):**
+
+- Structured 60%: 51.25% ± 0.73 pp test accuracy, a mean drop of 0.76 ± 0.71 pp vs each seed's dense reference.
+- Structured 40%: 52.82% ± 0.02 pp, at or above dense on average, and more stable across seeds.
+- Learned pruning beat random pruning at 60% sparsity by 0.87 ± 0.17 pp on average (51.67% vs 50.80%).
+
+**What these results mean:**
+
+- **Sparsity is not speed.** Masking 60% of weights in dense `Linear` layers gave no speedup and no size reduction; it was slower in this environment. Only structured pruning, which builds smaller tensors, reduced latency and size.
+- **Size comparison.** Deployable weights drop from about 35.7 MB to 11.8 MB (~3x smaller, estimated at 4 bytes per parameter). The 107 MB dense checkpoint file is larger because it also stores training-time gate tensors, so it is not a like-for-like comparison.
+- These are single-environment measurements, not hardware-independent claims, and this is an MLP, not a state-of-the-art CIFAR-10 model. The goal is to measure compression trade-offs honestly.
+
+## Quick start
+
+```bash
+pip install -r requirements.txt
+pytest -q                                    # 20 tests
+python scripts/train_and_report.py --epochs 5 --batch-size 128 --hidden-dims 2048 1024 512 --lambdas 0 0.001 --prune --pruning-strategy target --target-sparsities 20 40 60 80 --fine-tune-epochs 1
+```
+
+Full commands for every experiment are in [Reproduce](#reproduce). To serve a checkpoint, see [API](#api).
+
+## Repository layout
+
+| Path | Contents |
+|---|---|
+| `src/self_pruning_network/` | Model, gated layers, pruning, and training code |
+| `scripts/` | Training, ablation, benchmark, and structured-pruning runners |
+| `app/` | FastAPI inference service |
+| `tests/` | Unit tests |
+| `artifacts/` | Benchmark outputs (CSV, JSON, plots) that back every number in this README |
 
 ## Problem
 
@@ -69,7 +118,7 @@ Accuracy drops for hard models are relative to the corresponding unpruned select
 | Hard | 0 | 60% | 60.0000% | 40.0000% | 51.50% | 51.84% | 0.44 pp | 8,918,016 | 3,567,206 | 5,350,810 |
 | Hard | 0 | 80% | 80.0000% | 20.0000% | 48.54% | 49.11% | 3.17 pp | 8,918,016 | 1,783,603 | 7,134,413 |
 
-The maximum measured sparsity with a test-accuracy drop below one percentage point was 60%: 51.84% test accuracy, 0.44 percentage-point drop, and 5,350,810 pruned connections.
+The maximum measured sparsity with a test-accuracy drop below one percentage point was 60%: 51.84% test accuracy, 0.44 percentage-point drop (relative to the unpruned soft model; 0.37 pp relative to dense), and 5,350,810 pruned connections.
 
 Immediately after pruning and before fine-tuning, the 20%, 40%, 60%, and 80% models measured 50.61%, 50.65%, 49.80%, and 40.15% test accuracy. After one fine-tuning epoch they measured 52.08%, 51.87%, 51.84%, and 49.11%, respectively.
 
@@ -79,25 +128,33 @@ The generated source-of-truth artifacts are in [artifacts/final_benchmark/report
 
 Install dependencies:
 
-    python -m venv .venv
-    .\.venv\Scripts\Activate.ps1
-    pip install -r requirements.txt
+```
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+pip install -r requirements.txt
+```
 
 Run the final benchmark:
 
-    python scripts\train_and_report.py --epochs 5 --batch-size 128 --hidden-dims 2048 1024 512 --lambdas 0 0.001 --prune --pruning-strategy target --target-sparsities 20 40 60 80 --fine-tune-epochs 1
+```
+python scripts\train_and_report.py --epochs 5 --batch-size 128 --hidden-dims 2048 1024 512 --lambdas 0 0.001 --prune --pruning-strategy target --target-sparsities 20 40 60 80 --fine-tune-epochs 1
+```
 
 For a labeled smoke test, add --train-subset and --test-subset and write to a separate output directory. Smoke-test numbers must not be presented as full-CIFAR-10 benchmark results.
 
 Run the reproduced key learned-vs-random ablation (the executed full-data command):
 
-    python scripts\run_ablation.py --output-dir artifacts\ablation_key_benchmark --reuse-seed42 --seed42-checkpoint-dir artifacts\final_benchmark\checkpoints --seeds 42 123 2024 --targets 60 --multi-seed-targets 60 --epochs 5 --fine-tune-epochs 1 --batch-size 128 --hidden-dims 2048 1024 512 --device cpu
+```
+python scripts\run_ablation.py --output-dir artifacts\ablation_key_benchmark --reuse-seed42 --seed42-checkpoint-dir artifacts\final_benchmark\checkpoints --seeds 42 123 2024 --targets 60 --multi-seed-targets 60 --epochs 5 --fine-tune-epochs 1 --batch-size 128 --hidden-dims 2048 1024 512 --device cpu
+```
 
 This command runs the dense/soft controls and learned/random 60% comparison for all three seeds. The 20/40/60/80 random sweep was not included in the official run because the full CPU training budget is expensive.
 
 Threshold pruning is also available:
 
-    python scripts\train_and_report.py --prune --pruning-strategy threshold --prune-threshold 0.1 --fine-tune-epochs 1
+```
+python scripts\train_and_report.py --prune --pruning-strategy threshold --prune-threshold 0.1 --fine-tune-epochs 1
+```
 
 ## Checkpoints and deployment accounting
 
@@ -109,8 +166,10 @@ Gate parameters are training-time auxiliary parameters. Unstructured deployment 
 
 Set MODEL_CHECKPOINT to a dense, soft, or hard-pruned checkpoint:
 
-    $env:MODEL_CHECKPOINT="artifacts\final_benchmark\checkpoints\hard_target_0.6000.pt"
-    python -m uvicorn app.api:app --reload
+```
+$env:MODEL_CHECKPOINT="artifacts\final_benchmark\checkpoints\hard_target_0.6000.pt"
+python -m uvicorn app.api:app --reload
+```
 
 GET /model/summary reports layer metrics plus total, active, pruned, density, sparsity, and threshold fields.
 
@@ -118,7 +177,9 @@ GET /model/summary reports layer metrics plus total, active, pruned, density, sp
 
 The efficiency benchmark reloaded the validated final checkpoints without retraining:
 
-    python scripts\benchmark.py --benchmark-dir artifacts\final_benchmark --output-dir artifacts\efficiency_benchmark --warmup 20 --iterations 50 --batch-sizes 1 32 --device cpu --threads 1
+```
+python scripts\benchmark.py --benchmark-dir artifacts\final_benchmark --output-dir artifacts\efficiency_benchmark --warmup 20 --iterations 50 --batch-sizes 1 32 --device cpu --threads 1
+```
 
 The run used CPU, PyTorch 2.11.0+cpu, Python 3.11.9, seed 42, 20 warm-up iterations, and 50 measured iterations. The complete source-of-truth files are in [artifacts/efficiency_benchmark/reports](artifacts/efficiency_benchmark/reports), including [efficiency_results.csv](artifacts/efficiency_benchmark/reports/efficiency_results.csv), [efficiency_results.md](artifacts/efficiency_benchmark/reports/efficiency_results.md), [layer_efficiency.csv](artifacts/efficiency_benchmark/reports/layer_efficiency.csv), and [summary.json](artifacts/efficiency_benchmark/reports/summary.json).
 
@@ -198,29 +259,35 @@ Unstructured pruning masks individual weights while retaining the original dense
 
 The final full-data benchmark used the validated soft checkpoint, CIFAR-10 45,000/5,000/10,000 train/validation/test splits, seed 42, five fine-tuning epochs, CPU inference timing, one thread, 10 warm-up iterations, and 30 measured iterations per batch size. The command was:
 
-    python scripts\run_structured_pruning.py --checkpoint artifacts\final_benchmark\checkpoints\soft_lambda_0.0000.pt --dense-checkpoint artifacts\final_benchmark\checkpoints\dense_lambda_0.0000.pt --unstructured-checkpoint artifacts\final_benchmark\checkpoints\hard_target_0.6000.pt --targets 20 40 60 --fine-tune-epochs 5 --batch-size 128 --batch-sizes 1 32 --warmup 10 --iterations 30 --threads 1 --device cpu --output-dir artifacts\structured_pruning
+```
+python scripts\run_structured_pruning.py --checkpoint artifacts\final_benchmark\checkpoints\soft_lambda_0.0000.pt --dense-checkpoint artifacts\final_benchmark\checkpoints\dense_lambda_0.0000.pt --unstructured-checkpoint artifacts\final_benchmark\checkpoints\hard_target_0.6000.pt --targets 20 40 60 --fine-tune-epochs 5 --batch-size 128 --batch-sizes 1 32 --warmup 10 --iterations 30 --threads 1 --device cpu --output-dir artifacts\structured_pruning
+```
 
 ### Compact architectures and measured results
 
 Parameter counts include linear weights and biases plus trainable BatchNorm parameters. Gate scores are excluded from deployment parameter counts because compact models do not need them. Dense and unstructured rows use the existing dense-shaped checkpoints; unstructured MAC reduction is an ideal masked estimate, while structured MAC reduction is calculated from the compact matrices.
 
-| Model | Architecture | Test accuracy | Accuracy drop | Deployable parameters | Parameter reduction | Effective MACs | MAC reduction | Checkpoint MB | Batch-1 mean ms | Batch-32 mean ms |
-|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| Dense | 3072 → 2048 → 1024 → 512 → 10 | 52.21% | 0.00 pp | 8,928,778 | 0.00% | 8,918,016 | 0.00% | 107.104166 | 4.053557 | 21.408327 |
-| Unstructured 60% | 3072 → 2048 → 1024 → 512 → 10 | 51.84% | 0.44 pp | 8,928,778 | 0.00% | 3,567,206 | 60.000004%* | 107.103805 | 12.930140 | 35.034263 |
-| Structured 20% | 3072 → 1639 → 820 → 410 → 10 | 52.89% | -0.61 pp | 6,727,905 | 24.649207% | 6,719,288 | 24.654901% | 26.985815 | 1.140637 | 6.557863 |
-| Structured 40% | 3072 → 1229 → 615 → 308 → 10 | 52.72% | -0.44 pp | 4,730,289 | 47.021989% | 4,723,823 | 47.030562% | 18.987863 | 0.646763 | 4.220197 |
-| Structured 60% | 3072 → 820 → 410 → 205 → 10 | 52.05% | 0.23 pp | 2,945,655 | 67.009427% | 2,941,340 | 67.018000% | 11.841623 | 0.506517 | 2.612670 |
+"Drop vs soft" is measured against the unpruned soft model (52.28%), the convention used throughout this README's benchmark tables. "Drop vs dense" is measured against the separately trained dense baseline (52.21%). Negative values mean the pruned model scored higher.
 
-The structured models have physically smaller tensors. Their measured checkpoint sizes were 26,985,815 bytes, 18,987,863 bytes, and 11,841,623 bytes for 20%, 40%, and 60% neuron pruning, compared with 107,104,166 bytes for the dense checkpoint. This comparison includes the dense checkpoint's training-time gate tensors; it is an actual file-size comparison, not an estimate from parameter count.
+| Model | Architecture | Test accuracy | Drop vs soft | Drop vs dense | Deployable parameters | Parameter reduction | Effective MACs | MAC reduction | Checkpoint MB | Batch-1 mean ms | Batch-32 mean ms |
+|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| Dense | 3072 → 2048 → 1024 → 512 → 10 | 52.21% | n/a | 0.00 pp | 8,928,778 | 0.00% | 8,918,016 | 0.00% | 107.104166 | 4.053557 | 21.408327 |
+| Unstructured 60% | 3072 → 2048 → 1024 → 512 → 10 | 51.84% | 0.44 pp | 0.37 pp | 8,928,778 | 0.00% | 3,567,206 | 60.000004%* | 107.103805 | 12.930140 | 35.034263 |
+| Structured 20% | 3072 → 1639 → 820 → 410 → 10 | 52.89% | -0.61 pp | -0.68 pp | 6,727,905 | 24.649207% | 6,719,288 | 24.654901% | 26.985815 | 1.140637 | 6.557863 |
+| Structured 40% | 3072 → 1229 → 615 → 308 → 10 | 52.72% | -0.44 pp | -0.51 pp | 4,730,289 | 47.021989% | 4,723,823 | 47.030562% | 18.987863 | 0.646763 | 4.220197 |
+| Structured 60% | 3072 → 820 → 410 → 205 → 10 | 52.05% | 0.23 pp | 0.16 pp | 2,945,655 | 67.009427% | 2,941,340 | 67.018000% | 11.841623 | 0.506517 | 2.612670 |
+
+The structured models have physically smaller tensors. Their measured checkpoint sizes were 26,985,815 bytes, 18,987,863 bytes, and 11,841,623 bytes for 20%, 40%, and 60% neuron pruning, compared with 107,104,166 bytes for the dense checkpoint. This comparison includes the dense checkpoint's training-time gate tensors; it is an actual file-size comparison, not an estimate from parameter count. A like-for-like estimate of the dense model's deployable weights (8,928,778 parameters at 4 bytes each) is about 35.7 MB, which makes the 60% compact model roughly 3x smaller.
 
 ### Fine-tuning recovery
 
 | Model | Before fine-tuning | After fine-tuning | Recovery |
 |---|---:|---:|---:|
-| Structured 20% | 37.89% | 53.04% | +15.15 pp |
-| Structured 40% | 28.02% | 52.56% | +24.54 pp |
-| Structured 60% | 21.75% | 51.29% | +29.54 pp |
+| Structured 20% | 37.89% | 52.89% | +15.00 pp |
+| Structured 40% | 28.02% | 52.72% | +24.70 pp |
+| Structured 60% | 21.75% | 52.05% | +30.30 pp |
+
+These values come from the final compact benchmark (`artifacts/structured_pruning/reports/fine_tuning_recovery.csv`). The separate recovery ablation below reports slightly different 5-epoch values; see [Measurement notes](#measurement-notes).
 
 ### Layer-wise neuron counts
 
@@ -231,7 +298,7 @@ The structured models have physically smaller tensors. Their measured checkpoint
 | Structured 40% | 2048 → 1229 | 1024 → 615 | 512 → 308 | 10 → 10 |
 | Structured 60% | 2048 → 820 | 1024 → 410 | 512 → 205 | 10 → 10 |
 
-After five fine-tuning epochs, all three compact models recovered to within 0.61 percentage points of the dense reference; structured 20% reached 52.89%, structured 40% reached 52.72%, and structured 60% reached 52.05%. The 60% compact model provides the largest physical reduction: 67.009427% fewer deployable parameters and 67.018000% fewer dense MACs.
+After five fine-tuning epochs, all three compact models matched or came within 0.16 percentage points of the dense baseline (52.21%) in this single seed-42 run; structured 20% reached 52.89%, structured 40% reached 52.72%, and structured 60% reached 52.05%. The 60% compact model provides the largest physical reduction: 67.009427% fewer deployable parameters and 67.018000% fewer dense MACs.
 
 Structured pruning reduced measured CPU latency in this run: batch-1 mean latency fell from 4.053557 ms for Dense to 1.140637 ms, 0.646763 ms, and 0.506517 ms for Structured 20%, 40%, and 60%. Batch-32 mean latency fell from 21.408327 ms to 6.557863 ms, 4.220197 ms, and 2.612670 ms. These are environment-specific measurements, not universal speedup guarantees. The unstructured 60% masked model was slower than Dense because it still uses the original dense tensor shapes.
 
@@ -249,7 +316,7 @@ The full-data recovery ablation isolated fine-tuning duration while keeping the 
 | Structured 40% | 28.02% | 48.42% | 51.48% | 52.56% |
 | Structured 60% | 21.75% | 47.29% | 50.37% | 51.29% |
 
-Five epochs was selected for the final compact benchmark because every target still improved from three to five epochs (+0.29, +1.08, and +0.92 percentage points for 20%, 40%, and 60%). This is a practical fixed budget, not evidence that training has fully converged. The source-of-truth recovery files are in [artifacts/structured_recovery/reports](artifacts/structured_recovery/reports), including [recovery_results.csv](artifacts/structured_recovery/reports/recovery_results.csv) and [summary.json](artifacts/structured_recovery/reports/summary.json).
+This is a separate execution from the final compact benchmark, so its 5-epoch column differs slightly from the tables above. Five epochs was selected for the final compact benchmark because every target still improved from three to five epochs (+0.29, +1.08, and +0.92 percentage points for 20%, 40%, and 60%). This is a practical fixed budget, not evidence that training has fully converged. The source-of-truth recovery files are in [artifacts/structured_recovery/reports](artifacts/structured_recovery/reports), including [recovery_results.csv](artifacts/structured_recovery/reports/recovery_results.csv) and [summary.json](artifacts/structured_recovery/reports/summary.json).
 
 ### Multi-seed validation
 
@@ -260,15 +327,34 @@ The selected five-epoch compact models were validated from the existing full-dat
 | Structured 40% | 52.8233% | 0.0208 pp | -0.8167 pp | 0.2250 pp |
 | Structured 60% | 51.2467% | 0.7310 pp | 0.7600 pp | 0.7104 pp |
 
-The 40% result was more stable and had higher mean accuracy in these three seeds. The 60% result retained substantially more physical reduction, with a larger but still sub-one-point mean dense-relative drop. Three seeds provide robustness evidence, not statistical significance. The source-of-truth files are in [artifacts/structured_multiseed/reports](artifacts/structured_multiseed/reports), including [multi_seed_results.csv](artifacts/structured_multiseed/reports/multi_seed_results.csv) and [multi_seed_summary.md](artifacts/structured_multiseed/reports/multi_seed_summary.md).
+The seed-42 entries in this validation (52.80% at 40%, 51.84% at 60%) come from the multi-seed run itself. The per-seed values are in `multi_seed_results.csv`: at 60% they are 51.84%, 51.47%, and 50.43% for seeds 42, 123, and 2024. The 40% result was more stable and had higher mean accuracy in these three seeds. The 60% result retained substantially more physical reduction, with a larger but still sub-one-point mean dense-relative drop. Three seeds provide robustness evidence, not statistical significance. The source-of-truth files are in [artifacts/structured_multiseed/reports](artifacts/structured_multiseed/reports), including [multi_seed_results.csv](artifacts/structured_multiseed/reports/multi_seed_results.csv) and [multi_seed_summary.md](artifacts/structured_multiseed/reports/multi_seed_summary.md).
+
+## Measurement notes
+
+- **Separate benchmark runs.** The efficiency benchmark and the structured-pruning benchmark are separate executions, so their dense latencies differ (3.44 ms vs 4.05 ms at batch 1). Compare latencies only within a single table.
+- **Repeated configurations.** The same seed-42 structured models were fine-tuned in three separate executions. All three start from the identical pruned model (pre-fine-tuning test accuracy of 37.89%, 28.02%, and 21.75% for the 20%, 40%, and 60% targets), and the recovery and multi-seed summaries record the same learning rate, weight decay, and label smoothing, yet the final accuracies differ:
+
+  | Run | Source | Structured 20% | Structured 40% | Structured 60% |
+  |---|---|---:|---:|---:|
+  | Final compact benchmark | `structured_pruning/reports/structured_results.csv` | 52.89% | 52.72% | 52.05% |
+  | Recovery ablation (5 epochs) | `structured_recovery/reports/recovery_results.csv` | 53.04% | 52.56% | 51.29% |
+  | Multi-seed validation (seed 42) | `structured_multiseed/reports/multi_seed_results.csv` | n/a | 52.80% | 51.84% |
+
+  The spread is up to 0.76 pp at 60%, which is comparable to the seed-to-seed standard deviation (0.73 pp). This is most likely run-to-run variation in fine-tuning (for example data order), not a controlled repeat. Differences below about 1 pp between single structured 60% runs should be treated as noise; use the three-seed means for comparisons.
+- **Accuracy-drop baselines.** Drops in the benchmark tables are relative to the unpruned soft model unless a column says "vs dense".
 
 ## Testing
 
 Run:
 
-    pytest -q
+```
+pytest -q
+```
 
 The final repository test run passed 20 tests. Tests cover dense forward behavior, soft gate gradients, gate conversion, threshold masks, exact zeroing, fixed-mask enforcement, target sparsity, reproducible random and learned masks, structured dimension compaction, weight and BatchNorm transfer, parameter/MAC accounting, checkpoint reload, accuracy-drop calculation, and compact-model fine-tuning invariants.
+
+## Limitations
+
 - This is an MLP rather than a CNN, so it has limited image inductive bias.
 - The full 20/40/60/80 learned-vs-random sweep was not run across all seeds because the full CPU benchmark is expensive. The key 60% learned/random comparison was run at seeds 42, 123, and 2024; the full final learned benchmark remains the seed-42 run above.
 - The unstructured path retains dense tensor shapes; structured pruning is a separate compact-model transformation.
@@ -277,3 +363,13 @@ The final repository test run passed 20 tests. Tests cover dense forward behavio
 - Structured pruning physically reduces tensor dimensions, parameters, checkpoint size, and measured CPU latency in the executed benchmark, but results are tied to this architecture and environment.
 - The final benchmark uses five training epochs plus five compact-model fine-tuning epochs and is a reproducible engineering benchmark, not a state-of-the-art CIFAR-10 result.
 
+## Roadmap
+
+This project is under active development. Planned next steps:
+
+- [ ] Run the full 20/40/60/80 learned-vs-random sweep across all three seeds
+- [ ] Extend multi-seed validation to the full unstructured benchmark, not only the 60% target
+- [ ] Repeat the pruning study on a CNN to address the MLP limitation
+- [ ] Benchmark latency on additional hardware (and GPU) to test how far the speedups generalize
+- [ ] Explore sparse kernels or compiler support to see when unstructured sparsity can pay off in latency
+- [ ] Add a live demo of the inference API
