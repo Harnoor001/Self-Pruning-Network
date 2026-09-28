@@ -18,9 +18,9 @@
   "weight_decay": 0.0001,
   "label_smoothing": 0.05,
   "source_checkpoints": {
-    "42": "C:\\Users\\sharn\\OneDrive\\Desktop\\Self pruning Network\\artifacts\\final_benchmark\\checkpoints\\soft_lambda_0.0000.pt",
-    "123": "C:\\Users\\sharn\\OneDrive\\Desktop\\Self pruning Network\\artifacts\\ablation_key_benchmark\\seed123\\checkpoints\\soft_lambda_0.0000.pt",
-    "2024": "C:\\Users\\sharn\\OneDrive\\Desktop\\Self pruning Network\\artifacts\\ablation_key_benchmark\\seed2024\\checkpoints\\soft_lambda_0.0000.pt"
+      "42": "artifacts/final_benchmark/checkpoints/soft_lambda_0.0000.pt",
+    "123": "artifacts/ablation_key_benchmark/seed123/checkpoints/soft_lambda_0.0000.pt",
+    "2024": "artifacts/ablation_key_benchmark/seed2024/checkpoints/soft_lambda_0.0000.pt"
   }
 }
 ```
