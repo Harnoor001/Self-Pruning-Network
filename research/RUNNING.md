@@ -45,7 +45,16 @@ python scripts/research/benchmark.py --config configs/mlp_legacy_sources.yaml
 python scripts/research/analyze_results.py --config configs/mlp_legacy_sources.yaml
 ```
 
-## 3. Stage A, research protocol (GPU recommended)
+## 3. Stage A, research protocol (CPU-feasible: ~20 h on a 20-thread CPU; ~3–4 h on a GPU)
+
+One resumable command runs the whole sequence below (pilot → five seeds → reliability →
+benchmark → analysis → ablation C → ablation A):
+
+```bash
+bash scripts/research/run_mlp_cpu_pipeline.sh python
+```
+
+Or step by step:
 
 ```bash
 python scripts/research/run_comparison.py --config configs/mlp.yaml --pilot --dry-run
@@ -61,6 +70,14 @@ python scripts/research/analyze_results.py --config configs/mlp.yaml
 ```
 
 ## 4. Stage B, VGG-16-BN (GPU required in practice)
+
+One resumable command (refuses to start without CUDA; ~4–5 h per seed plus ablations):
+
+```bash
+bash scripts/research/run_vgg_gpu_pipeline.sh python
+```
+
+Or step by step:
 
 ```bash
 python scripts/research/run_comparison.py  --config configs/vgg_cifar10.yaml --pilot --dry-run
