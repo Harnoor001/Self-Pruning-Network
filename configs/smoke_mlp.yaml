@@ -1,0 +1,11 @@
+# CPU smoke test: tiny MLP, data subsets, 1 epoch. Results are NOT scientific evidence.
+extends: [mlp.yaml]
+name: smoke_mlp
+output_root: artifacts/research/smoke_mlp
+seeds: [42, 123]
+model: {hidden_dims: [64, 32, 16]}
+data: {num_workers: 0, train_limit: 2048, validation_limit: 512, test_limit: 512, calibration_size: 256}
+train: {epochs: 2, amp: false}
+fine_tune: {epochs: 1, amp: false}
+reliability: {units_per_layer: 8}
+benchmark: {iterations: 10, warmup: 2}

@@ -1,0 +1,21 @@
+# Stage A: the existing 3072-2048-1024-512-10 MLP, research protocol.
+extends: [pruning.yaml]
+name: mlp
+output_root: artifacts/research/mlp
+model: {family: mlp, input_dim: 3072, hidden_dims: [2048, 1024, 512], num_classes: 10, dropout: 0.3, use_batchnorm: true}
+data: {data_dir: data, batch_size: 128, num_workers: 4, augmentation: mlp_legacy, split_mode: fixed, split_seed: 0,
+       calibration_size: 2048, eval_batch_size: 1000}
+train:   # shared by all sources (legacy optimiser: AdamW over all params incl. gate scores)
+  epochs: 30
+  optimizer: adamw
+  lr: 0.0008
+  weight_decay: 0.0001
+  gate_weight_decay: null          # null = same as weight_decay (legacy behaviour)
+  scheduler: cosine
+  label_smoothing: 0.05
+  amp: true
+sources:
+  dense: {objective: dense}
+  gated: {objective: gated, train: {gate_lambda: 0.0, gate_penalty_norm: sum}}
+  slimming: {objective: slimming, train: {slimming_lambda: 0.0001}}
+fine_tune: {epochs: 5, optimizer: adamw, lr: 0.0002, weight_decay: 0.0001, scheduler: cosine, label_smoothing: 0.05, amp: true}

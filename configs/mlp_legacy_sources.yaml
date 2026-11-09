@@ -1,0 +1,27 @@
+# Stage A verification on the EXISTING legacy checkpoints (5-epoch training, seed-dependent split).
+# CPU-feasible. Sources are loaded, not trained; the legacy split of each seed is reproduced
+# exactly so validation images are the ones the legacy run selected checkpoints on.
+extends: [mlp.yaml]
+name: mlp_legacy_sources
+output_root: artifacts/research/mlp_legacy_sources
+seeds: [42, 123, 2024]
+data: {split_mode: legacy, num_workers: 0}
+sources:
+  gated:
+    objective: gated
+    checkpoint:
+      42: artifacts/final_benchmark/checkpoints/soft_lambda_0.0000.pt     # reused by the legacy ablation for seed 42
+      123: artifacts/ablation_key_benchmark/seed123/checkpoints/soft_lambda_0.0000.pt
+      2024: artifacts/ablation_key_benchmark/seed2024/checkpoints/soft_lambda_0.0000.pt
+  dense:
+    objective: dense
+    checkpoint:
+      42: artifacts/final_benchmark/checkpoints/dense_lambda_0.0000.pt
+      123: artifacts/ablation_key_benchmark/seed123/checkpoints/dense_lambda_0.0000.pt
+      2024: artifacts/ablation_key_benchmark/seed2024/checkpoints/dense_lambda_0.0000.pt
+pruning:
+  methods: [random@gated, l1@gated, l2@gated, activation@gated, taylor@gated, gate_in@gated, gate_out@gated,
+            gate_combined@gated, bn_gamma@gated, random@dense, l1@dense, l2@dense, activation@dense, taylor@dense]
+reliability:
+  sources: [gated, dense]
+fine_tune: {epochs: 1, amp: false}
