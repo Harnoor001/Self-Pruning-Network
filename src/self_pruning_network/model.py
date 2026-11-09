@@ -518,7 +518,16 @@ class StructuredPrunedMLP(nn.Module):
 
     @classmethod
     @torch.no_grad()
-    def from_self_pruning(cls, source: SelfPruningMLP, target_sparsity: float) -> "StructuredPrunedMLP":
+    def from_self_pruning(cls, source: SelfPruningMLP, target_sparsity: float,
+                          *, fold_gates: bool = False) -> "StructuredPrunedMLP":
+        """Build a compact model from a gated source model.
+
+        ``fold_gates=False`` (default) reproduces the legacy behaviour that
+        copied the raw weights ``W``. That behaviour is NOT function-preserving
+        for soft-mode sources, whose forward pass uses ``W * sigmoid(S)``; see
+        ``research/INITIAL_AUDIT.md`` finding 1. Pass ``fold_gates=True`` to copy
+        the effective weight used by the source's current mode.
+        """
         if not 0.0 <= target_sparsity < 1.0:
             raise ValueError("target_sparsity must be between 0 and 1 (exclusive of 1)")
         if len(source.prunable_layers) != len(source.hidden_dims) + 1:
@@ -560,7 +569,8 @@ class StructuredPrunedMLP(nn.Module):
             source_index = output_keep.to(source_layer.weight.device)
             input_index = previous_keep.to(source_layer.weight.device)
             with torch.no_grad():
-                compact_layer.weight.copy_(source_layer.weight.detach()[source_index][:, input_index])
+                source_weight = source_layer.pruned_weight().detach() if fold_gates else source_layer.weight.detach()
+                compact_layer.weight.copy_(source_weight[source_index][:, input_index])
                 compact_layer.bias.copy_(source_layer.bias.detach()[source_index])
             if index < len(source.hidden_dims) and source.use_batchnorm:
                 source_bn = source_batch_norms[index]
