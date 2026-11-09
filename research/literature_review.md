@@ -2,7 +2,8 @@
 
 Compiled 2026-11-09. **Verification policy:** an entry is marked ✅ when title, authors,
 venue, year and DOI/official URL were checked against at least one official or
-bibliographic source during this review (sources listed per entry). Entries marked ⚠️
+bibliographic source during this review (sources listed per entry). (Update 2026-11-10:
+the three former ⚠️ entries were completed from CVF/arXiv listings and added to the bib.) Entries marked ⚠️
 have verified title/venue/URL but an incomplete author list; they are **not** in
 `paper/references.bib` and must not be cited until completed. Entries marked 📘 are
 standard references cited from the reviewer's knowledge of the canonical publication;
@@ -109,9 +110,9 @@ BibTeX keys refer to [`paper/references.bib`](paper/references.bib).
 |---|---|---|---|
 | `franssen2025connect` | C. Franssen, J. Jiang, Y. Peng, B. Heidergott, "CoNNect: Connectivity-Based Regularization for Structural Pruning of Neural Networks", TMLR 2025 (arXiv:2502.00744) | ✅ | Regulariser that favours preserving input–output connectivity; a structured, connectivity-aware alternative to per-connection L1 gates. |
 | `le2025probe` | Q. Le, E. Diao, Z. Wang, X. Wang, J. Ding, L. Yang, A. Anwar, "Probe Pruning: Accelerating LLMs through Dynamic Pruning via Model-Probing", ICLR 2025 (arXiv:2502.15618) | ✅ | Dynamic (batch-wise) structured pruning without fine-tuning. Different regime (LLMs, input-dependent masks); cited to delimit our static-pruning scope. |
-| — | Sun et al., "MDP: Multidimensional Vision Model Pruning with Latency Constraint", CVPR 2025 (openaccess.thecvf.com) | ⚠️ author list unverified | Latency-constrained channel + block pruning; supports reporting *measured* latency rather than MACs alone. |
-| — | Berisha et al., "Variance-Based Pruning for Accelerating and Compressing Trained Networks", ICCV 2025 (openaccess.thecvf.com) | ⚠️ author list unverified | Activation-variance criterion for trained networks; close to our Method 4. |
-| — | Zhang et al., "Flexible Group Count Enables Hassle-Free Structured Pruning", CVPR 2025 | ⚠️ | Finer-than-filter structured granularity. |
+| `sun2025mdp` | X. Sun, B. Lakshmanan, M. Shen, S. Lan, J. Chen, J. M. Alvarez, "MDP: Multidimensional Vision Model Pruning with Latency Constraint", CVPR 2025, pp. 20113–20123 (arXiv:2504.02168; CVF open access) | ✅ (verified 2026-11-10) | Latency-constrained channel + block pruning; supports reporting *measured* latency rather than MACs alone. |
+| `berisha2025variance` | U. Berisha, J. Mehnert, A. P. Condurache, "Variance-Based Pruning for Accelerating and Compressing Trained Networks", ICCV 2025 (arXiv:2507.12988; ICCV 2025 virtual site) | ✅ (verified 2026-11-10; page numbers not checked) | Activation-variance criterion for trained networks; close to our Method 4. |
+| `zhang2025flexible` | J. Zhang, S. Zhong, A. Ye, Z. Liu, S. Zhao, K. Zhou, L. Li, S.-H. Choi, R. Chen, X. Hu, S. Xu, V. Chaudhary, "Flexible Group Count Enables Hassle-Free Structured Pruning", CVPR 2025, pp. 4807–4818, DOI 10.1109/CVPR52734.2025.00453 | ✅ (verified 2026-11-10) | Finer-than-filter structured granularity. |
 
 A search for 2026 CNN channel-pruning papers on learnable connection gates did not surface
 a verifiable venue publication at the time of writing; this gap should be re-checked

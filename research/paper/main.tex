@@ -81,8 +81,11 @@ Molchanov et al.~\cite{molchanov2019importance}.
 Li et al.~\cite{li2017filters} rank filters by $\ell_1$ norm. With batch normalization
 (BN) incoming-weight norms are scale-ambiguous~\cite{ye2018rethinking,ioffe2015bn}.
 \textbf{Data-driven criteria.} Activation statistics~\cite{hu2016trimming}, first-order
-Taylor expansions of the loss~\cite{molchanov2017pruning,molchanov2019importance} and
-reconstruction of the next layer (ThiNet~\cite{luo2017thinet}) use calibration data.
+Taylor expansions of the loss~\cite{molchanov2017pruning,molchanov2019importance},
+activation variance~\cite{berisha2025variance} and reconstruction of the next layer
+(ThiNet~\cite{luo2017thinet}) use calibration data. Recent work optimizes structures under
+measured latency constraints~\cite{sun2025mdp} or at finer-than-filter group
+granularity~\cite{zhang2025flexible}.
 \textbf{Learned scales and gates.} Network Slimming~\cite{liu2017slimming} imposes an
 $\ell_1$ penalty on BN scaling factors; $L_0$ regularization learns stochastic
 gates~\cite{louizos2018l0}; SNIP scores connections through multiplicative indicator
