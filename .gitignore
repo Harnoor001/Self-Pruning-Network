@@ -19,3 +19,8 @@ dist/
 
 # Model checkpoints are generated locally; reports and plots are versioned.
 artifacts/**/checkpoints/
+
+# Research framework: model weights, resumable state and masks stay local; CSV/JSON/MD/plots are versioned.
+artifacts/research/**/*.pt
+artifacts/research/smoke_*/
+artifacts/research/**/logs/
