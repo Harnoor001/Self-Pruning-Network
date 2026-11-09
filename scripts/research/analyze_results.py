@@ -342,6 +342,132 @@ def fig_benchmark(root: Path, dirs: list[Path]):
     return bench
 
 
+def _mean_sd_pct(values: pd.Series) -> str:
+    v = values.dropna().astype(float) * 100
+    if v.empty:
+        return "--"
+    return f"{v.mean():.2f}" + (f" ± {v.std(ddof=1):.2f}" if len(v) > 1 else "") + f" (n={len(v)})"
+
+
+def ablation_c_section(frame: pd.DataFrame, config: dict, primary_ft: int, paper_tab: Path, publish: bool) -> list[str]:
+    """Ablation C: test accuracy versus fine-tuning budget (rows written by run_ablation.py --which C)."""
+    spec = config.get("ablation", {}).get("fine_tune")
+    if not spec:
+        return []
+    budgets = [int(e) for e in spec["epochs"]]
+    data = frame[frame["method"].isin(spec["methods"]) & frame["ft_epochs"].isin(budgets) &
+                 frame["target_ratio"].isin(spec["ratios"])]
+    if set(data["ft_epochs"]) <= {primary_ft}:
+        return []  # ablation not run yet
+    table = (data.groupby(["method", "target_ratio", "ft_epochs"])["test_accuracy"].apply(_mean_sd_pct)
+             .unstack("ft_epochs").reset_index())
+    table.columns = [f"FT {c} ep" if isinstance(c, (int, np.integer)) else c for c in table.columns]
+    table["method"] = table["method"].map(label)
+    # LaTeX: means only (SDs are in findings.md) to fit a column
+    means = data.groupby(["method", "target_ratio", "ft_epochs"])["test_accuracy"].mean().unstack("ft_epochs") * 100
+    tex = [r"\begin{table}[t]", r"\centering",
+           r"\caption{Ablation C: mean test accuracy (\%) versus fine-tuning epochs, same seeds as the pilot.}",
+           r"\label{tab:ablation_c}", r"\footnotesize",
+           r"\begin{tabular}{ll" + "c" * means.shape[1] + "}", r"\toprule",
+           "Method & Removed & " + " & ".join(f"{int(c)} ep" for c in means.columns) + r" \\", r"\midrule"]
+    for (method, ratio), row in means.iterrows():
+        tex.append(f"{label(method)} & {int(round(ratio * 100))}\\% & " +
+                   " & ".join("--" if pd.isna(v) else f"{v:.2f}" for v in row.values) + r" \\")
+    tex += [r"\bottomrule", r"\end{tabular}", r"\end{table}"]
+    (paper_tab / "ablation_c.tex").write_text("\n".join(tex) + "\n", encoding="utf-8")
+    return ["", "## Ablation C: test accuracy (%) vs fine-tuning budget", "",
+            "Epoch 0 = pruned model without fine-tuning. Best-validation checkpoint selection within each budget.", "",
+            table.to_markdown(index=False)]
+
+
+def ablation_a_section(ablation_a: pd.DataFrame, frame: pd.DataFrame, lambda_sources: dict, primary_ft: int,
+                       gate_stats_path: Path, out: Path, paper_tab: Path, dirs: list[Path]) -> list[str]:
+    """Ablation A: gate penalty strength / normalisation (separate sources, run_ablation.py --which A)."""
+    if ablation_a.empty:
+        return []
+
+    def describe_source(name: str) -> str:
+        if name == "gated":
+            return "λ=0 (main gated source)"
+        train = lambda_sources[name].get("train", {})
+        return f"λ={train.get('gate_lambda'):g} ({train.get('gate_penalty_norm', 'sum')})"
+
+    ratios = sorted(r for r in ablation_a["target_ratio"].unique() if r > 0)
+    criteria = sorted(c for c in ablation_a["criterion"].unique() if c != "none")
+    seeds = sorted(int(s) for s in ablation_a["seed"].unique())
+    base = frame[(frame["source"] == "gated") & frame["criterion"].isin(criteria) & frame["seed"].isin(seeds)]
+    data = pd.concat([base, ablation_a])
+    data = data[(data["ft_epochs"] == primary_ft) & data["target_ratio"].isin([0.0, *ratios])]
+    order = ["gated", *lambda_sources]
+    rows = []
+    for source in order:
+        sub = data[data["source"] == source]
+        if sub.empty:
+            continue
+        row = {"source": source, "setting": describe_source(source),
+               "source test acc": _mean_sd_pct(sub.groupby("seed")["source_test_accuracy"].first()),
+               "unpruned + FT": _mean_sd_pct(sub[sub["target_ratio"] == 0]["test_accuracy"])}
+        for ratio in ratios:
+            for crit in criteria:
+                cell = sub[(sub["criterion"] == crit) & (sub["target_ratio"] == ratio)]
+                row[f"{crit} @{int(round(ratio * 100))}%"] = _mean_sd_pct(cell["test_accuracy"])
+        rows.append(row)
+    table = pd.DataFrame(rows)
+    table.to_csv(out / "ablation_a_summary.csv", index=False)
+    lines = ["", f"## Ablation A: gate penalty strength (seeds {seeds}, FT {primary_ft} epochs)", "",
+             "Test accuracy (%) after pruning each source with each criterion. Rows are separately trained "
+             "sources; the existing method's formulation is unchanged (the penalty is varied only here).", "",
+             table.to_markdown(index=False)]
+    if gate_stats_path.exists():
+        gs = pd.read_csv(gate_stats_path)
+        agg = (gs.groupby(["source", "group"])[["connection_gate_mean", "connection_gate_std", "neuron_score_std",
+                                                 "neuron_score_range"]].mean().reset_index())
+        agg.insert(1, "setting", agg["source"].map(lambda s: describe_source(s) if s in order else s))
+        agg.to_csv(out / "ablation_a_gate_statistics.csv", index=False)
+        lines += ["", "### Gate statistics per hidden layer (mean over seeds)", "",
+                  "`neuron_score_*` describe the gate-in neuron score; `connection_gate_*` the individual gates σ(S).",
+                  "", agg.to_markdown(index=False, floatfmt=".6g")]
+    # LaTeX table (means only)
+    tex = [r"\begin{table}[t]", r"\centering",
+           r"\caption{Ablation A: test accuracy (\%, mean over " + str(len(seeds)) +
+           r" seeds) when the gated source is trained with different gate penalties.}",
+           r"\label{tab:ablation_a}", r"\footnotesize",
+           r"\begin{tabular}{l" + "c" * (1 + len(criteria) * len(ratios)) + "}", r"\toprule",
+           "Penalty & Source & " + " & ".join(CRITERION_LABEL.get(c, c) for _ in ratios for c in criteria) + r" \\",
+           r"\midrule"]
+    for source in order:
+        sub = data[data["source"] == source]
+        if sub.empty:
+            continue
+        cells = [f"{sub.groupby('seed')['source_test_accuracy'].first().mean() * 100:.2f}"]
+        for ratio in ratios:
+            for crit in criteria:
+                v = sub[(sub["criterion"] == crit) & (sub["target_ratio"] == ratio)]["test_accuracy"].mean()
+                cells.append("--" if pd.isna(v) else f"{v * 100:.2f}")
+        tex.append(describe_source(source).replace("λ", r"$\lambda$") + " & " + " & ".join(cells) + r" \\")
+    tex += [r"\bottomrule", r"\end{tabular}", r"\end{table}"]
+    (paper_tab / "ablation_a.tex").write_text("\n".join(tex) + "\n", encoding="utf-8")
+    # figure: accuracy per criterion across penalty settings
+    fig, ax = plt.subplots(figsize=(3.4, 2.5))
+    settings = [s for s in order if not data[data["source"] == s].empty]
+    width = 0.8 / max(len(criteria), 1)
+    for i, crit in enumerate(criteria):
+        vals = [data[(data["source"] == s) & (data["criterion"] == crit) & (data["target_ratio"] == ratios[0])]
+                ["test_accuracy"] for s in settings]
+        x = np.arange(len(settings)) + (i - (len(criteria) - 1) / 2) * width
+        ax.bar(x, [v.mean() * 100 for v in vals], width=width - 0.02,
+               yerr=[(v.std(ddof=1) * 100 if len(v) > 1 else 0) for v in vals], capsize=1.5,
+               color=PALETTE[i % len(PALETTE)], label=CRITERION_LABEL.get(crit, crit), error_kw={"elinewidth": 0.7})
+    ax.set_xticks(range(len(settings)), [describe_source(s).replace(" (main gated source)", "") for s in settings],
+                  rotation=35, ha="right", fontsize=6.5)
+    ax.set_ylabel(f"Test acc. (%), {int(round(ratios[0] * 100))}% removed")
+    lo = min(v for v in data[data["target_ratio"] == ratios[0]]["test_accuracy"]) * 100
+    ax.set_ylim(max(0, lo - 3), None)
+    ax.legend(frameon=False, ncol=2, loc="upper center", bbox_to_anchor=(0.5, -0.45), fontsize=6.5)
+    save(fig, dirs, "fig_ablation_gate_lambda")
+    return lines
+
+
 def main() -> int:
     parser = base_parser(__doc__)
     args = parser.parse_args()
@@ -362,6 +488,11 @@ def main() -> int:
     if frame.empty:
         log("no results found")
         return 1
+    # Ablation-A rows (extra lambda sources) are analysed separately so they never enter the main
+    # comparison, its Holm family or its figures.
+    lambda_sources = dict(config.get("ablation", {}).get("gate_lambda", {}).get("sources", {}))
+    ablation_a = frame[frame["source"].isin(lambda_sources)].copy()
+    frame = frame[~frame["source"].isin(lambda_sources)].copy()
     primary_ft = int(config["fine_tune"]["epochs"])
     if primary_ft not in set(frame["ft_epochs"]):
         primary_ft = int(frame["ft_epochs"].mode().iloc[0])
@@ -371,8 +502,11 @@ def main() -> int:
     tests.to_csv(out / "paired_tests.csv", index=False)
     methods = [m for m in STYLE if m in set(frame["method"])]
     n_seeds = frame["seed"].nunique()
+    own_source = [label(m) for m in methods if not m.endswith("@gated")]
+    source_note = ("All criteria score the gated source" if not own_source else
+                   "Criteria score the gated source except " + ", ".join(own_source) + " (own training objective)")
     caption = (f"\\texttt{{{name.replace('_', chr(92) + '_')}}}: test accuracy (\\%, mean $\\pm$ sample SD over "
-               f"{n_seeds} seeds) after {primary_ft} fine-tuning epoch(s). All criteria score the gated source; "
+               f"{n_seeds} seeds) after {primary_ft} fine-tuning epoch(s). {source_note}; "
                f"identical compact architectures per column.")
     (paper_tab / "main_accuracy.tex").write_text(latex_main_table(summary, primary_ft, methods, caption,
                                                                   f"{name}_main"), encoding="utf-8")
@@ -419,9 +553,8 @@ def main() -> int:
     if stab is not None:
         lines += ["", "## Calibration-resampling stability (Spearman between scores from two disjoint calibration "
                   "subsets)", "", stab.round(4).to_markdown(index=False)]
-    if gate_stats_path.exists():
-        lines += ["", "## Gate statistics (ablation A)", "",
-                  pd.read_csv(gate_stats_path).round(6).to_markdown(index=False)]
+    lines += ablation_c_section(frame, config, primary_ft, paper_tab, publish)
+    lines += ablation_a_section(ablation_a, frame, lambda_sources, primary_ft, gate_stats_path, out, paper_tab, dirs)
     if bench is not None:
         cols = [c for c in bench.columns if c.endswith("median_ms") or c in
                 ("label", "target_ratio", "deployable_parameters", "macs", "deployable_size_bytes")]
@@ -432,7 +565,7 @@ def main() -> int:
     shutil.copy(out / "findings.md", paper_tab / "findings.md")
     (out / "analysis_inputs.json").write_text(json.dumps({"results_rows": len(frame), "primary_ft": primary_ft,
                                                           "methods": sorted(frame["method"].unique().tolist())}, indent=2))
-    log(f"analysis written to {out} and {paper_fig}")
+    log(f"analysis written to {out}" + (f" and {paper_fig}" if publish else " (smoke run: not copied to the paper)"))
     return 0
 
 
