@@ -50,6 +50,17 @@ def fixed_split_indices(n: int = 50_000, split_seed: int = 0) -> tuple[torch.Ten
     return permutation[validation_size:].sort().values, permutation[:validation_size].sort().values
 
 
+def legacy_split_indices(n: int = 50_000, seed: int = 42) -> tuple[torch.Tensor, torch.Tensor]:
+    """Reproduce the legacy ``random_split(full, [n - n//10, n//10], Generator().manual_seed(seed))``.
+
+    Used only to evaluate legacy checkpoints on the exact validation images they were
+    selected on (the legacy split depends on the training seed; audit finding 8).
+    """
+    validation_size = max(1, int(n * 0.1))
+    permutation = torch.randperm(n, generator=torch.Generator().manual_seed(int(seed)))
+    return permutation[: n - validation_size].sort().values, permutation[n - validation_size:].sort().values
+
+
 class TensorImageDataset(Dataset):
     def __init__(self, images: torch.Tensor, labels: torch.Tensor, augmentation: str = "none") -> None:
         if augmentation not in {"none", "standard", "mlp_legacy"}:
@@ -97,9 +108,12 @@ def build_research_loaders(data_dir: str | Path = "data", batch_size: int = 128,
                            augmentation: str = "standard", split_seed: int = 0, loader_seed: int = 0,
                            calibration_size: int = 2048, eval_batch_size: int | None = None,
                            train_limit: int | None = None, validation_limit: int | None = None,
-                           test_limit: int | None = None, arrays=None) -> Loaders:
+                           test_limit: int | None = None, arrays=None, legacy_split: bool = False) -> Loaders:
     x_train, y_train, x_test, y_test = arrays if arrays is not None else load_cifar10_arrays(data_dir)
-    train_idx, val_idx = fixed_split_indices(int(x_train.shape[0]), split_seed)
+    if legacy_split:
+        train_idx, val_idx = legacy_split_indices(int(x_train.shape[0]), split_seed)
+    else:
+        train_idx, val_idx = fixed_split_indices(int(x_train.shape[0]), split_seed)
     calib_idx = train_idx[: min(calibration_size, train_idx.numel())]
     if train_limit is not None:
         train_idx = train_idx[:train_limit]

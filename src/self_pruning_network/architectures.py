@@ -129,8 +129,11 @@ def with_widths(config: dict[str, object], widths: list[int]) -> dict[str, objec
     if config["family"] == "mlp":
         config["hidden_dims"] = [int(w) for w in widths]
         return config
+    cfg = VGG_CFGS[config["cfg"]] if isinstance(config["cfg"], str) else config["cfg"]
+    if sum(v != "M" for v in cfg) != len(widths):
+        raise ValueError(f"expected {sum(v != 'M' for v in cfg)} widths, got {len(widths)}")
     iterator = iter(widths)
-    config["cfg"] = [v if v == "M" else int(next(iterator)) for v in config["cfg"]]
+    config["cfg"] = [v if v == "M" else int(next(iterator)) for v in cfg]
     return config
 
 
