@@ -1,0 +1,13 @@
+seed,source,criterion,group,calibration_resample_spearman
+42,gated,activation,0,0.9942823127249928
+42,gated,activation,1,0.9779894700844002
+42,gated,activation,2,0.9421584783877504
+42,gated,taylor,0,0.9947729098255421
+42,gated,taylor,1,0.9860514828159644
+42,gated,taylor,2,0.9801605183048946
+42,dense,activation,0,0.9944932601324046
+42,dense,activation,1,0.9803171826943708
+42,dense,activation,2,0.9437570810588116
+42,dense,taylor,0,0.9949657802574708
+42,dense,taylor,1,0.9871336210750302
+42,dense,taylor,2,0.9806355393334935
