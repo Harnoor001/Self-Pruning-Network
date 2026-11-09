@@ -1,0 +1,53 @@
+{
+  "experiment": "mlp_legacy_sources",
+  "architecture": "mlp",
+  "seed": 42,
+  "method": "gate_combined@gated",
+  "criterion": "gate_combined",
+  "source": "gated",
+  "allocation": "uniform",
+  "target_ratio": 0.4,
+  "ft_epochs": 1,
+  "source_validation_accuracy": 0.5174,
+  "source_test_accuracy": 0.5228,
+  "source_train_time_s": null,
+  "dense_deployable_parameters": 8928778,
+  "dense_macs": 8918016,
+  "dense_deployable_size_bytes": 35750686,
+  "source_widths": [
+    2048,
+    1024,
+    512
+  ],
+  "units_removed_percent": 39.955357142857146,
+  "layer_removed_percent": [
+    39.990234375,
+    39.94140625,
+    39.84375
+  ],
+  "scoring_time_s": 0.00817510000342736,
+  "pruning_time_s": 0.10677379999833647,
+  "keep_indices_sha": "4702b5e6e4d1f304",
+  "pre_ft_validation_accuracy": 0.424,
+  "pre_ft_validation_loss": 1.72667529296875,
+  "pre_ft_test_accuracy": 0.4342,
+  "validation_accuracy": 0.5088,
+  "validation_loss": 1.36974033203125,
+  "test_accuracy": 0.51,
+  "test_loss": 1.36512890625,
+  "best_ft_epoch": 1,
+  "fine_tune_time_s": 32.25706600000558,
+  "deployable_parameters": 4730289,
+  "macs": 4723823,
+  "deployable_size_bytes": 18945118,
+  "compact_widths": [
+    1229,
+    615,
+    308
+  ],
+  "parameter_reduction_percent": 47.02198889926482,
+  "mac_reduction_percent": 47.030561506056955,
+  "size_reduction_percent": 47.00767979668977,
+  "accuracy_change_vs_source_pp": -1.2800000000000034,
+  "timestamp_utc": "2026-11-09T18:35:37.792800+00:00"
+}
