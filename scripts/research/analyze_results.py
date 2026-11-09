@@ -220,7 +220,7 @@ def fig_recovery(frame, dirs, methods):
         ax.set_xlabel("Units removed (%)")
         ax.set_title(f"Before (dotted) and after (solid) {ft[0]} FT epoch(s)")
     ax.set_ylabel("Test accuracy (%)")
-    ax.legend(frameon=False, ncol=2)
+    ax.legend(frameon=False, ncol=2, loc="upper center", bbox_to_anchor=(0.5, -0.22), fontsize=6.5)
     save(fig, dirs, "fig_finetune_recovery")
 
 
@@ -265,9 +265,10 @@ def reliability(root: Path, dirs: list[Path]):
             stability = pd.concat(frames).groupby(["source", "criterion"])["calibration_resample_spearman"].agg(
                 ["mean", "std", "count"]).reset_index()
     # bar chart of mean Spearman
-    fig, ax = plt.subplots(figsize=(3.4, 2.6))
     sources = list(summary["source"].unique())
-    order = (summary[summary["source"] == sources[0]].sort_values("mean", ascending=False)["criterion"].tolist())
+    # union of criteria over all sources (gate criteria exist only on gated-objective sources)
+    order = summary.groupby("criterion")["mean"].max().sort_values(ascending=False).index.tolist()
+    fig, ax = plt.subplots(figsize=(max(3.4, 0.38 * len(order) + 0.8), 2.6))
     width = 0.8 / len(sources)
     for i, source in enumerate(sources):
         sub = summary[summary["source"] == source].set_index("criterion").reindex(order)
@@ -311,7 +312,7 @@ def reliability(root: Path, dirs: list[Path]):
         ax.hist(z, bins=40, histtype="step", linewidth=1.2, color=PALETTE[i], label=f"{CRITERION_LABEL[crit]} (CV={cv:.1e})")
     ax.set_xlabel("Standardised score (layer 1)")
     ax.set_ylabel("Units")
-    ax.legend(frameon=False, fontsize=6.5)
+    ax.legend(frameon=False, fontsize=6.5, ncol=2, loc="upper center", bbox_to_anchor=(0.5, -0.22))
     save(fig, dirs, "fig_score_distribution")
     return summary, stability
 
@@ -370,8 +371,9 @@ def main() -> int:
     tests.to_csv(out / "paired_tests.csv", index=False)
     methods = [m for m in STYLE if m in set(frame["method"])]
     n_seeds = frame["seed"].nunique()
-    caption = (f"{name}: test accuracy (\\%, mean $\\pm$ sample SD over {n_seeds} seeds) after {primary_ft} "
-               f"fine-tuning epoch(s). Identical compact architectures per column.")
+    caption = (f"\\texttt{{{name.replace('_', chr(92) + '_')}}}: test accuracy (\\%, mean $\\pm$ sample SD over "
+               f"{n_seeds} seeds) after {primary_ft} fine-tuning epoch(s). All criteria score the gated source; "
+               f"identical compact architectures per column.")
     (paper_tab / "main_accuracy.tex").write_text(latex_main_table(summary, primary_ft, methods, caption,
                                                                   f"{name}_main"), encoding="utf-8")
     fig_accuracy_curves(summary, primary_ft, "target_ratio", "Hidden units removed (%)", "fig_accuracy_vs_ratio", dirs, methods)
