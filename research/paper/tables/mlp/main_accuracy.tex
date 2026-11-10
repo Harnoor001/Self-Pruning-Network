@@ -1,0 +1,25 @@
+\begin{table}[t]
+\centering
+\caption{\texttt{mlp}: test accuracy (\%, mean $\pm$ sample SD over 5 seeds) after 5 fine-tuning epoch(s). Criteria score the gated source except Net. Slimming (own training objective); identical compact architectures per column.}
+\label{tab:mlp_main}
+\footnotesize
+\begin{tabular}{lccc}
+\toprule
+Method & 20\% units removed & 40\% units removed & 60\% units removed \\
+\midrule
+Gate-in (existing) & 58.26 $\pm$ 0.24 & 56.29 $\pm$ 0.16 & 53.58 $\pm$ 0.28 \\
+Taylor & 60.43 $\pm$ 0.24 & 59.98 $\pm$ 0.13 & 58.82 $\pm$ 0.33 \\
+Activation & 60.17 $\pm$ 0.40 & 59.60 $\pm$ 0.41 & 58.37 $\pm$ 0.18 \\
+L1 in+out & 60.39 $\pm$ 0.09 & 59.96 $\pm$ 0.26 & 58.82 $\pm$ 0.21 \\
+L2 in+out & 60.26 $\pm$ 0.42 & 60.04 $\pm$ 0.14 & 58.63 $\pm$ 0.42 \\
+Net. Slimming & 59.41 $\pm$ 0.23 & 59.27 $\pm$ 0.29 & 58.57 $\pm$ 0.19 \\
+Gate-combined (V2) & 60.26 $\pm$ 0.17 & 59.68 $\pm$ 0.28 & 58.66 $\pm$ 0.21 \\
+Gate-out (V1) & 60.16 $\pm$ 0.21 & 59.87 $\pm$ 0.21 & 58.72 $\pm$ 0.08 \\
+Random & 59.98 $\pm$ 0.24 & 59.22 $\pm$ 0.22 & 57.95 $\pm$ 0.07 \\
+\midrule
+Unpruned gated + FT & \multicolumn{3}{c}{60.46 $\pm$ 0.20} \\
+Unpruned dense + FT & \multicolumn{3}{c}{60.27 $\pm$ 0.23} \\
+Unpruned slimming + FT & \multicolumn{3}{c}{59.76 $\pm$ 0.24} \\
+\bottomrule
+\end{tabular}
+\end{table}

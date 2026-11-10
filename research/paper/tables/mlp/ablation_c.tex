@@ -1,0 +1,30 @@
+\begin{table}[t]
+\centering
+\caption{Ablation C: mean test accuracy (\%) versus fine-tuning epochs. The primary budget uses all seeds; the other budgets use the seeds on which ablation C was run (see findings.md for n per cell).}
+\label{tab:ablation_c}
+\footnotesize
+\begin{tabular}{llcccc}
+\toprule
+Method & Removed & 0 ep & 1 ep & 3 ep & 5 ep \\
+\midrule
+Gate-combined (V2) & 20\% & 55.40 & 59.09 & 60.38 & 60.26 \\
+Gate-combined (V2) & 40\% & 44.87 & 58.41 & 59.35 & 59.68 \\
+Gate-combined (V2) & 60\% & 27.67 & 56.77 & 58.11 & 58.66 \\
+Gate-in (existing) & 20\% & 45.10 & 56.38 & 57.84 & 58.26 \\
+Gate-in (existing) & 40\% & 30.54 & 53.05 & 55.50 & 56.29 \\
+Gate-in (existing) & 60\% & 17.53 & 48.55 & 51.97 & 53.58 \\
+L1 in+out & 20\% & 57.40 & 59.24 & 60.34 & 60.39 \\
+L1 in+out & 40\% & 50.11 & 58.63 & 59.67 & 59.96 \\
+L1 in+out & 60\% & 37.19 & 56.92 & 58.34 & 58.82 \\
+Random & 20\% & 57.67 & 59.17 & 59.99 & 59.98 \\
+Random & 40\% & 47.76 & 57.83 & 59.12 & 59.22 \\
+Random & 60\% & 25.03 & 56.23 & 57.66 & 57.95 \\
+Net. Slimming & 20\% & 58.67 & 58.67 & 59.30 & 59.41 \\
+Net. Slimming & 40\% & 55.70 & 58.40 & 59.10 & 59.27 \\
+Net. Slimming & 60\% & 44.62 & 57.06 & 58.46 & 58.57 \\
+Taylor & 20\% & 58.68 & 59.43 & 60.25 & 60.43 \\
+Taylor & 40\% & 54.01 & 58.84 & 59.77 & 59.98 \\
+Taylor & 60\% & 40.23 & 57.27 & 58.60 & 58.82 \\
+\bottomrule
+\end{tabular}
+\end{table}

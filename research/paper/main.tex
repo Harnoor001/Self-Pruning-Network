@@ -32,14 +32,16 @@ how well each score predicts the exact validation-loss increase caused by removi
 single neuron. We show analytically that, when a gated layer is followed by batch
 normalization, the mean incoming gate of a neuron is invariant to the network function
 and therefore cannot be learned as an importance signal, and that an unnormalized
-$\ell_1$ gate penalty under Adam moves all gates by the same amount. In a three-seed
-verification on the existing MLP checkpoints, the mean-incoming-gate score was below
-random neuron selection at every pruning ratio. After one fine-tuning epoch it reached
-$47.05\%$ test accuracy against $50.14\%$ for random at $60\%$ of hidden units removed.
-Its scores were weakly anti-correlated with single-neuron removal damage. Reading the same
-gates on the outgoing side, which batch normalization does not cancel, recovers the
-accuracy of magnitude criteria. A VGG-16 study and longer-trained sources are specified
-and implemented but were not executed in the available CPU-only environment.
+$\ell_1$ gate penalty under Adam moves all gates by the same amount. Over five seeds with
+30-epoch sources, the mean-incoming-gate score was below random neuron selection at every
+pruning ratio and on every seed: after five fine-tuning epochs it reached $53.58\%$ test
+accuracy against $57.95\%$ for random at $60\%$ of hidden units removed, and all 15
+alternative criteria beat it (Holm-corrected paired $t$-test). Its scores were
+anti-correlated with single-neuron removal damage. Reading the same gates on the outgoing
+side, which batch normalization does not cancel, recovers the accuracy of magnitude
+criteria, and any positive gate penalty removes the failure, but no gate score exceeded
+the conventional criteria. A VGG-16 study is specified and implemented but was not
+executed in the available CPU-only environment.
 \end{abstract}
 
 \begin{IEEEkeywords}
@@ -178,9 +180,13 @@ augmentation.
 \textbf{Sources.} For each seed, the \emph{dense} source is trained with
 $\mathcal{L}_{\mathrm{CE}}$ only, the \emph{gated} source with the existing objective,
 and the \emph{Slimming} source with $\mathcal{L}_{\mathrm{CE}}+10^{-4}\sum|\gamma|$.
-All three share the same initialization for a given seed. In the executed verification
-experiment the dense and gated sources are the committed legacy checkpoints (5 epochs,
-$\lambda=0$); no Slimming source was trained.
+All three share the same initialization for a given seed and are trained for 30 epochs
+(AdamW, learning rate $8\times10^{-4}$, cosine schedule, label smoothing $0.05$); the
+best-validation epoch is kept. The gated source uses $\lambda=0$, the setting of the
+existing checkpoints; other penalties are studied in ablation A. Seeds are 42, 123, 2024,
+7 and 21. Compact models are fine-tuned for 5 epochs (AdamW, $2\times10^{-4}$, cosine).
+In the verification experiment (Section~\ref{sec:legacy}) the dense and gated sources are
+instead the committed 5-epoch checkpoints, fine-tuned for one epoch.
 
 \textbf{Common pruning protocol.} All post-training criteria score the \emph{same} gated
 source (with gates folded into the weights), and are repeated on the dense source to
@@ -226,14 +232,18 @@ also reported with its original global ranking at the same total unit budget.
 % ---------------------------------------------------------------------------
 \section{Limitations}
 \begin{itemize}
-\item \textbf{Executed scope.} Only the verification experiment on the existing
-5-epoch MLP checkpoints (three seeds, one fine-tuning epoch, CPU) was executed. The
-research-protocol MLP study, the five-seed extension, the ablations and the VGG-16-BN
-study are implemented and dry-run tested, but their results are not reported here.
-\item \textbf{Undertrained sources.} The verified checkpoints reach about 52\% test
-accuracy after five epochs; conclusions may change for converged networks.
-\item \textbf{Statistical power.} Three seeds cannot support strong significance claims;
-the exact Wilcoxon test cannot reach $p<0.25$.
+\item \textbf{Executed scope.} The MLP study (five seeds), its ablations A and C (three
+seeds) and the verification on the original checkpoints were executed on CPU. The
+VGG-16-BN study is implemented and dry-run tested, but was not executed and no results are
+reported for it.
+\item \textbf{Model quality.} The MLP sources reach about 60\% test accuracy on raw
+pixels; conclusions may differ for stronger models.
+\item \textbf{Statistical power.} With five seeds the exact Wilcoxon test cannot reach
+$p<0.0625$, so significance rests on the paired $t$-test, whose normality assumption is
+questionable for 4 of 45 comparisons. Ablations A and C (three seeds) are descriptive.
+\item \textbf{Confounds.} Network Slimming is evaluated on its own source, which is
+$0.6$\,pp weaker; global allocation changes the architecture and is not an equal-cost
+comparison.
 \item \textbf{Hardware.} Latency was measured on one CPU with one thread; no GPU was
 available, so no GPU latency or memory figures are reported.
 \item \textbf{Architecture.} An MLP on raw pixels is not representative of modern

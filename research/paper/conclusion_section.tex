@@ -1,21 +1,25 @@
-% Conclusions are limited to the executed verification experiment (Section~\ref{sec:results}).
+% Conclusions are limited to the executed MLP experiments (Section~\ref{sec:results}).
 We asked whether the learnable connection gates of an existing self-pruning MLP identify
 prunable neurons. Every criterion used the same compact architectures, fine-tuning budget
-and validation-based selection, and the setting was the existing 5-epoch checkpoints on
-three seeds. Here the answer is \emph{no}: the method's own neuron score, the mean
-incoming gate, gave lower accuracy than random neuron selection at every pruning ratio and
-on every seed. Its scores were weakly \emph{anti}-correlated with the measured damage of
-removing a neuron. This matches the analysis in Section~\ref{sec:analysis}: behind batch
-normalization, the level of a neuron's incoming gates does not affect the network function.
+and validation-based selection, over five seeds with 30-epoch sources. In the setting the
+existing method ships with ($\lambda=0$) the answer is \emph{no}: its neuron score, the
+mean incoming gate, gave lower accuracy than random neuron selection at every pruning ratio
+and on every seed, by up to $4.4$\,pp after fine-tuning, and its scores were
+anti-correlated with the measured damage of removing a neuron. The same result held on the
+original 5-epoch checkpoints. This matches the analysis in Section~\ref{sec:analysis}:
+behind batch normalization, the level of a neuron's incoming gates does not affect the
+network function.
 
-Two outcomes are constructive. First, reading the same gates on the outgoing side, which
-BN does not cancel, recovers the accuracy of standard magnitude criteria. Second, the audit
-found and corrected a gate-folding error in the original compact reconstruction. The
-results do \emph{not} show that gate-based criteria are better than conventional ones,
-since no such difference was observed. They also do not establish any ranking among the
-conventional criteria, which were not tested against each other.
+Three outcomes are constructive. First, reading the same gates on the outgoing side, which
+BN does not cancel, recovers the accuracy of standard magnitude criteria. Second, any
+positive gate penalty we tested removes the failure: gate-in then matches the other gate
+scores and exceeds random selection (descriptively, three seeds). Even so, in the main study no gate score exceeded the conventional
+criteria, and stronger sum penalties made the networks harder to prune for every
+criterion. Third, the audit found and corrected a gate-folding error in the original
+compact reconstruction. The results do \emph{not} show that gate-based criteria are better
+than conventional ones, and they establish no ranking among the conventional criteria,
+which were not tested against each other.
 
-These conclusions rest on undertrained MLP sources, $\lambda=0$, one fine-tuning epoch and
-three seeds. The implemented research protocol extends the study to 30-epoch sources, the
-existing penalty strengths, five seeds and a VGG-16-BN network. Running it on a GPU is the
-necessary next step before the findings can be generalized.
+These conclusions rest on a single MLP architecture on raw CIFAR-10 pixels, CPU-only
+measurements, and three seeds for the ablations. The implemented VGG-16-BN study is the
+necessary next step before the findings can be generalized to convolutional networks.
