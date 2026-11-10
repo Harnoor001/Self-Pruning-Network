@@ -366,7 +366,7 @@ def ablation_c_section(frame: pd.DataFrame, config: dict, primary_ft: int, paper
     # LaTeX: means only (SDs are in findings.md) to fit a column
     means = data.groupby(["method", "target_ratio", "ft_epochs"])["test_accuracy"].mean().unstack("ft_epochs") * 100
     tex = [r"\begin{table}[t]", r"\centering",
-           r"\caption{Ablation C: mean test accuracy (\%) versus fine-tuning epochs, same seeds as the pilot.}",
+           r"\caption{Ablation C: mean test accuracy (\%) versus fine-tuning epochs. The primary budget uses all seeds; the other budgets use the seeds on which ablation C was run (see findings.md for n per cell).}",
            r"\label{tab:ablation_c}", r"\footnotesize",
            r"\begin{tabular}{ll" + "c" * means.shape[1] + "}", r"\toprule",
            "Method & Removed & " + " & ".join(f"{int(c)} ep" for c in means.columns) + r" \\", r"\midrule"]

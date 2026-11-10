@@ -1,9 +1,189 @@
 # Results analysis
 
 This document interprets the experiments that were **actually executed**. Every number
-below is copied from a generated file; the file is named next to each table. Nothing here
-comes from the research-protocol (`configs/mlp.yaml`) or VGG (`configs/vgg_cifar10.yaml`)
-studies, which are implemented but were **not run** (CPU-only machine, no GPU).
+below is copied from a generated file; the file is named next to each table.
+
+* **Part I** — the research-protocol MLP study (`configs/mlp.yaml`, `artifacts/research/mlp/`):
+  30-epoch sources, five seeds, Network Slimming source, global allocation, ablations A and C.
+* **Part II** — the earlier verification on the committed legacy 5-epoch checkpoints
+  (`configs/mlp_legacy_sources.yaml`, `artifacts/research/mlp_legacy_sources/`).
+
+The VGG-16-BN study (`configs/vgg_cifar10.yaml`) is implemented but was **not run**: the
+machine has no GPU and the study is not CPU-feasible. Nothing below comes from it.
+
+# Part I — research-protocol MLP study
+
+## I.0 What was executed
+
+| Item | Value |
+|---|---|
+| Config | `configs/mlp.yaml` (resolved copy: `artifacts/research/mlp/experiment_config.yaml`) |
+| Seeds | 42, 123, 2024, 7, 21 (pilot 42/123/2024 first, then extended); ablations A and C on the three pilot seeds |
+| Data | CIFAR-10, fixed 45,000 / 5,000 train/validation split (`split_seed: 0`, same for every seed); test set used only for reporting |
+| Sources (per seed, same initialization) | dense (CE), gated (existing objective, λ = 0, sum penalty), Slimming (CE + 1e-4·Σ\|γ\|); 30 epochs, AdamW lr 8e-4, cosine, label smoothing 0.05; best-validation epoch kept |
+| Source test accuracy (mean ± SD, 5 seeds) | dense 60.06 ± 0.17, gated 60.14 ± 0.16, Slimming 59.51 ± 0.08 % (`results.csv`, `source_test_accuracy` of the control rows) |
+| Criteria | random, L1/L2 in+out, activation, Taylor (dense and gated sources); gate-in (existing), gate-out (V1), gate-combined (V2), BN \|γ\| (gated source); Slimming \|γ\| on its own source, uniform and global allocation |
+| Ratios | 20 / 40 / 60 % of hidden units |
+| Fine-tuning | 5 epochs, AdamW lr 2e-4, cosine, identical for every method; best-validation checkpoint (incl. epoch 0) |
+| Control | each unpruned source + the same 5-epoch fine-tuning |
+| Rows | 525 in `results.csv` (435 main-study rows; the rest are ablation A/C rows) |
+| Hardware / time | CPU only (torch 2.11.0+cpu, 20 threads); whole pipeline 23 h 08 min (01:40 → 00:48, `pipeline_steps.out`); seed 42 source training 13.4 min dense, 21.1 min gated (`seed42/sources/*/info.json`) |
+
+Reproduce: `bash scripts/research/run_mlp_cpu_pipeline.sh python` (`research/RUNNING.md` §3).
+
+## I.1 RQ1/RQ2: does the existing gate score identify prunable neurons?
+
+**No — and with 30-epoch sources the deficit is larger than in the legacy check.**
+Source: `analysis/findings.md`, `analysis/summary.csv`, `analysis/paired_tests.csv`.
+
+Test accuracy after 5 fine-tuning epochs (%, mean ± SD over 5 seeds), criteria scoring the
+gated source unless noted:
+
+| Method | 20 % | 40 % | 60 % |
+|---|---|---|---|
+| **Gate-in (existing)** | **58.26 ± 0.24** | **56.29 ± 0.16** | **53.58 ± 0.28** |
+| Random | 59.98 ± 0.24 | 59.22 ± 0.22 | 57.95 ± 0.07 |
+| Gate-out (V1) | 60.16 ± 0.21 | 59.87 ± 0.21 | 58.72 ± 0.08 |
+| Gate-combined (V2) | 60.26 ± 0.17 | 59.68 ± 0.28 | 58.66 ± 0.21 |
+| L1 in+out | 60.39 ± 0.09 | 59.96 ± 0.26 | 58.82 ± 0.21 |
+| L2 in+out | 60.26 ± 0.42 | 60.04 ± 0.14 | 58.63 ± 0.42 |
+| Activation | 60.17 ± 0.40 | 59.60 ± 0.41 | 58.37 ± 0.18 |
+| Taylor | 60.43 ± 0.24 | 59.98 ± 0.13 | 58.82 ± 0.33 |
+| BN \|γ\| (diagnostic) | 60.39 ± 0.26 | 59.70 ± 0.39 | 58.83 ± 0.29 |
+| Net. Slimming (own source, uniform) | 59.41 ± 0.23 | 59.27 ± 0.29 | 58.57 ± 0.19 |
+| Net. Slimming (own source, global)¹ | 59.64 ± 0.27 | 59.57 ± 0.16 | 58.32 ± 0.16 |
+| Unpruned gated + FT (control) | 60.46 ± 0.20 | | |
+
+¹ Global allocation removes the same *number* of units but yields per-seed architectures
+with larger parameter reductions (32.1 / 59.0 / 77.7 % instead of 24.6 / 47.0 / 67.0 %), so
+it is not an equal-cost comparison.
+
+Before fine-tuning (`pre_ft_test_accuracy_mean`) gate-in keeps 44.79 / 30.49 / 18.90 %
+against random 57.43 / 46.89 / 24.03 % (gated source).
+
+Paired comparison against gate-in (15 alternatives per ratio, Holm correction within ratio):
+
+* **All 15 alternatives beat gate-in on 5/5 seeds at every ratio** (45/45 comparisons).
+* Mean improvement: +1.16 to +2.18 pp at 20 %, +2.93 to +3.75 pp at 40 %, +4.37 to +5.34 pp at 60 %.
+* Holm-adjusted paired t-test p < 0.05 for **15/15 at every ratio** (largest adjusted p per ratio: 0.0046, 0.00014, 0.000056).
+* Random vs gate-in: +1.72, +2.93, +4.37 pp.
+* The exact Wilcoxon test sits at its floor p = 0.0625 for every comparison (5/5 wins); with n = 5 it cannot go lower, so significance rests on the t-test. Shapiro–Wilk p < 0.05 for 4 of the 45 difference vectors (all at 20 %), where the t-test assumption is questionable; the 5/5 sign agreement holds regardless.
+
+Interpretation is the same as in Part II: with BN after each gated layer the level of a
+neuron's incoming gates does not affect the function (`novelty_audit.md`, O2). In layer 1
+the gate-in score has a coefficient of variation of 9.2–9.6 × 10⁻⁴ on all five seeds
+(gate-out 1.1 × 10⁻³, L1 0.11–0.12, Taylor 0.57–0.59; `seed*/reliability/scores.pt`), so
+its ranking is set by tiny residual differences, which are anti-correlated with damage
+(§I.3). Gate-out and gate-combined, the separately implemented variants, again reach the
+level of the conventional criteria; the existing method's formulation is unchanged.
+
+## I.2 Other comparisons (descriptive; not tested)
+
+No hypothesis test was run between non-gate-in criteria. Descriptively:
+
+* Taylor, L1, L2 and BN \|γ\| are within 0.35 pp of each other at every ratio; at 20 % Taylor (60.43) and L1 (60.39) are within 0.1 pp of the unpruned + FT control (60.46).
+* Random is the lowest non-gate-in criterion at 40 % and 60 % (0.7–0.9 pp below the magnitude criteria); activation lies between random and the magnitude criteria.
+* Dense vs gated source: the same criterion gives nearly the same accuracy (L1 at 60 %: 58.78 dense vs 58.82 gated; Taylor 58.92 vs 58.82). Gate training at λ = 0 did not make the network more prunable.
+* **Network Slimming** preserves the most accuracy *before* fine-tuning at 40–60 % (55.43 / 44.75 % vs 53.26 / 39.34 % for Taylor on the gated source), but its source is 0.6 pp weaker (59.51 vs 60.14 %), and after 5 FT epochs it ends 0.25–1.0 pp below Taylor on the gated source. Slimming is evaluated on its *own* source, so source quality and criterion are confounded.
+
+## I.3 RQ5: does the score predict single-unit removal damage?
+
+Source: `analysis/reliability_summary.csv`, `seed*/reliability/{damage,correlations}.csv`
+(64 units per hidden layer, 3 layers, 5 seeds; 960 removals per source).
+
+Spearman ρ, mean over layers then mean ± SD over 5 seeds:
+
+| Criterion | dense | gated | Slimming |
+|---|---|---|---|
+| L1 in+out | 0.068 ± 0.086 | 0.114 ± 0.068 | 0.269 ± 0.061 |
+| L2 in+out | 0.044 ± 0.072 | 0.099 ± 0.077 | 0.257 ± 0.073 |
+| BN \|γ\| | 0.035 ± 0.071 | 0.086 ± 0.064 | 0.321 ± 0.093 |
+| Taylor | 0.106 ± 0.087 | 0.078 ± 0.037 | 0.263 ± 0.086 |
+| Gate-out (V1) | – | 0.091 ± 0.080 | – |
+| Gate-combined (V2) | – | 0.050 ± 0.064 | – |
+| L1 in only | 0.054 ± 0.032 | 0.018 ± 0.067 | 0.219 ± 0.070 |
+| Activation | −0.024 ± 0.032 | −0.066 ± 0.022 | 0.248 ± 0.091 |
+| Random | −0.046 ± 0.026 | −0.043 ± 0.077 | −0.007 ± 0.095 |
+| **Gate-in (existing)** | – | **−0.161 ± 0.088** | – |
+
+* Gate-in is the lowest criterion, below random; its per-layer means are −0.084, −0.205 and −0.193 (layers 1–3).
+* On the dense and gated sources every correlation is weak (|ρ| ≤ 0.17). Mean single-unit damage is 1.7 × 10⁻⁴ nats (SD 2.5 × 10⁻⁴); 23 % (dense) and 24 % (gated) of removals *decrease* the validation loss.
+* On the **Slimming** source every non-random criterion correlates more strongly with damage (0.22–0.32), and fewer removals reduce the loss (20 %). A plausible reading is that the sparsity penalty concentrates importance in fewer units; this was not tested.
+* Calibration stability (`stability_summary.csv`, 15 = 5 seeds × 3 layers): Spearman between scores from two disjoint calibration subsets is 0.977–0.987 for Taylor and 0.962–0.981 for activation. Weak reliability is not estimation noise.
+
+## I.4 Ablation C: fine-tuning budget (FT 0/1/3 on 3 pilot seeds; FT 5 on 5 seeds)
+
+Source: `analysis/findings.md` (section "Ablation C"), `research/paper/tables/mlp/ablation_c.tex`.
+
+| Method | ratio | FT 0 | FT 1 | FT 3 | FT 5 |
+|---|---|---|---|---|---|
+| Gate-in (existing) | 20 % | 45.10 ± 0.40 | 56.38 ± 0.20 | 57.84 ± 0.47 | 58.26 ± 0.24 |
+| | 40 % | 30.54 ± 0.44 | 53.05 ± 0.20 | 55.50 ± 0.26 | 56.29 ± 0.16 |
+| | 60 % | 17.53 ± 1.41 | 48.55 ± 0.79 | 51.97 ± 0.49 | 53.58 ± 0.28 |
+| Random | 20 % | 57.67 ± 0.43 | 59.17 ± 0.34 | 59.99 ± 0.34 | 59.98 ± 0.24 |
+| | 40 % | 47.76 ± 2.02 | 57.83 ± 0.30 | 59.12 ± 0.26 | 59.22 ± 0.22 |
+| | 60 % | 25.03 ± 1.36 | 56.23 ± 0.35 | 57.66 ± 0.27 | 57.95 ± 0.07 |
+| L1 in+out | 60 % | 37.19 ± 1.41 | 56.92 ± 0.09 | 58.34 ± 0.23 | 58.82 ± 0.21 |
+| Taylor | 60 % | 40.23 ± 2.91 | 57.27 ± 0.26 | 58.60 ± 0.19 | 58.82 ± 0.33 |
+| Gate-combined (V2) | 60 % | 27.67 ± 0.73 | 56.77 ± 0.17 | 58.11 ± 0.08 | 58.66 ± 0.21 |
+| Net. Slimming | 60 % | 44.62 ± 2.61 | 57.06 ± 0.17 | 58.46 ± 0.23 | 58.57 ± 0.19 |
+
+(All ratios for all six methods are in the source file.)
+
+* Fine-tuning shrinks but does **not** close the gate-in deficit. At 60 % the gap to random is 7.5 pp at 0 epochs, 7.7 at 1, 5.7 at 3 and 4.4 pp at 5 epochs.
+* Every other method gains at most 0.55 pp from 3 to 5 epochs, so the 5-epoch budget is close to saturation for them.
+* Without fine-tuning Slimming is the best method at 40 % and 60 % (tied with Taylor at 20 %: 58.67 vs 58.68), but not after 5 epochs. Method rankings depend on the fine-tuning budget, which is why the budget is identical for every method.
+
+## I.5 Ablation A: gate penalty strength (3 pilot seeds, 40 % removed, FT 5 epochs)
+
+Source: `analysis/ablation_a_summary.csv`, `analysis/ablation_a_gate_statistics.csv`,
+`plots/fig_ablation_gate_lambda`. Each row is a separately trained gated source; the
+existing method's formulation is unchanged, only its λ is varied.
+
+| Source | source test acc | Gate-in | Gate-out | Gate-comb. | Random |
+|---|---|---|---|---|---|
+| λ = 0 (main gated source) | 60.25 ± 0.09 | **56.30 ± 0.14** | 59.84 ± 0.06 | 59.63 ± 0.38 | 59.27 ± 0.26 |
+| λ = 1e-6 (sum) | 60.32 ± 0.11 | 59.85 ± 0.12 | 59.88 ± 0.41 | 59.76 ± 0.35 | 59.49 ± 0.30 |
+| λ = 1e-5 (sum) | 60.09 ± 0.17 | 59.30 ± 0.19 | 59.35 ± 0.20 | 59.18 ± 0.09 | 58.68 ± 0.33 |
+| λ = 1e-4 (sum) | 60.20 ± 0.20 | 58.31 ± 0.28 | 58.55 ± 0.40 | 58.33 ± 0.26 | 57.62 ± 0.09 |
+| λ = 1e-3 (sum) | 60.05 ± 0.30 | 57.90 ± 0.25 | 58.04 ± 0.25 | 57.93 ± 0.14 | 57.52 ± 0.15 |
+| λ = 0.1 (mean) | 60.23 ± 0.04 | 59.92 ± 0.20 | 59.91 ± 0.15 | 59.91 ± 0.17 | 58.94 ± 0.43 |
+| λ = 1 (mean) | 60.28 ± 0.07 | 59.69 ± 0.04 | 59.81 ± 0.13 | 59.86 ± 0.18 | 59.09 ± 0.28 |
+
+Findings (descriptive; n = 3, no tests run on ablation A):
+
+* **The gate-in failure is specific to λ = 0.** With every positive penalty tested, gate-in is within 0.25 pp of gate-out and gate-combined and 0.36–0.98 pp above random.
+* Source accuracy does not depend on λ (60.05–60.32 %), even at λ = 1e-3 (sum), where every connection gate has collapsed to σ(S) ≈ 0.087 (layer means 0.0873–0.0874, SD ≤ 2.5 × 10⁻⁴). BN absorbs the uniform scale change — a direct observation of the scale invariance (O2) and the uniform drift (O3).
+* Larger *sum* penalties (1e-5 to 1e-3) lower post-pruning accuracy for **all** criteria, random included (random 59.49 → 57.52 %). The penalty makes the network harder to prune at equal FT budget rather than making the gates more informative. The mean-normalized penalties (0.1, 1) do not show this drop.
+* At λ = 0 the gate-in neuron score has a within-layer SD of 1.6–8.2 × 10⁻⁴; at λ = 1e-6 (sum) it is 0.025–0.12. The penalty creates the spread the score needs, so λ = 0 — the setting of the committed checkpoints — is the worst case for the method's own score.
+
+## I.6 RQ4: measured efficiency
+
+Source: `benchmark/benchmark_results.csv` (CPU, 1 thread, median of 100 timed iterations).
+
+| Model | Deployable params | MACs | bs=1 (ms) | bs=64 (ms) |
+|---|---|---|---|---|
+| Dense | 8,928,778 | 8,918,016 | 1.174 | 11.953 |
+| 20 % (uniform) | 6,727,905 (−24.6 %) | 6,719,288 | 0.835 | 9.474 |
+| 40 % (uniform) | 4,730,289 (−47.0 %) | 4,723,823 | 0.524 | 6.564 |
+| 60 % (uniform) | 2,945,655 (−67.0 %) | 2,941,340 | 0.316 | 4.429 |
+| Slimming global 60 % (5 per-seed architectures) | 1,921,055–2,049,129 | 1,916,740–2,044,814 | 0.252–0.369 | 2.509–2.705 |
+| Gated training-time model | 8,928,778 (+8.9 M gate scores) | 8,918,016 | 12.975 | 23.935 |
+
+* Reductions are physical (smaller dense layers). Latency falls monotonically at both batch sizes in this run; in Part II the 20 % model measured *slower* at bs = 1, so bs = 1 timings at this scale are fragile and we claim speed-ups only at bs = 64.
+* The gated model as trained is about 11× slower at bs = 1 than the dense model; gates must be folded before deployment.
+* No GPU measurements exist.
+
+## I.7 Threats to validity (Part I)
+
+1. **One architecture and dataset**: MLP on raw CIFAR-10 pixels (≈ 60 % test). The VGG study is required before generalizing to CNNs.
+2. **Ablations A and C use three seeds** (except the FT 5 column) and are descriptive only.
+3. **Slimming** is evaluated on its own, slightly weaker source; criterion and source are confounded. Global allocation changes the architecture and is not an equal-cost comparison.
+4. **Statistics**: only the t-test can reach significance at n = 5, and a few difference vectors fail Shapiro–Wilk at 20 %.
+5. **Single fixed split** for all seeds: seed varies initialization and data order, not the split.
+6. **CPU latency** on one machine with one thread.
+
+# Part II — legacy verification (5-epoch checkpoints)
 
 ## 0. What was executed
 
@@ -17,7 +197,7 @@ studies, which are implemented but were **not run** (CPU-only machine, no GPU).
 | Control | unpruned source + the same fine-tuning budget |
 | Hardware | CPU only (torch 2.11.0+cpu, 20 threads for training, 1 thread for latency) |
 | Rows | 132 (`artifacts/research/mlp_legacy_sources/results.csv`) |
-| Not run | Network Slimming *source* (needs training; `bn_gamma@gated` is only a diagnostic), global allocation, ablations A–E, 5-seed extension, VGG-16 |
+| Not run in Part II | Slimming source, global allocation, ablations A and C, 5 seeds (all run in Part I); VGG-16 (not run anywhere) |
 
 Re-generate everything with the four commands in `research/RUNNING.md` §2.
 
@@ -143,9 +323,9 @@ that fold-then-compact at 0 % reproduces the source exactly: for every seed,
 
 ## 7. Threats to validity
 
-1. **Undertrained sources** (5 epochs, about 52 % test). The research protocol trains for 30 epochs; conclusions may change.
-2. **λ = 0 gated sources.** The gates were trained without the sparsity penalty, which is what the committed checkpoints provide. With λ > 0, uniform drift (O3) makes gate-in rankings even less informative, but this was not measured here (ablation A not run).
-3. **One fine-tuning epoch.** Longer fine-tuning may close the remaining gaps further (ablation C not run).
+1. **Undertrained sources** (5 epochs, about 52 % test). Part I repeats the study with 30-epoch sources (≈ 60 %); the main conclusion holds.
+2. **λ = 0 gated sources.** The gates were trained without the sparsity penalty, which is what the committed checkpoints provide. Ablation A (§I.5) shows the gate-in deficit disappears for every λ > 0 tested.
+3. **One fine-tuning epoch.** Ablation C (§I.4) shows that up to 5 epochs shrink but do not close the gate-in gap.
 4. **n = 3 seeds.** Only the Holm-corrected t-test can reach significance, and it assumes normal paired differences, which cannot be checked meaningfully at n = 3.
 5. **Single architecture.** MLP on raw pixels only. The VGG study is required before generalising to CNNs.
 6. **Legacy splits differ per seed.** This is necessary to avoid evaluating on images the source was trained on. Seed therefore confounds initialisation and split, as in the original repository.

@@ -1,0 +1,12 @@
+=== 01:40:20 scripts/research/train_sources.py --config configs/mlp.yaml --pilot
+=== 04:06:25 scripts/research/run_comparison.py --config configs/mlp.yaml --pilot
+=== 07:37:04 scripts/research/run_importance_analysis.py --config configs/mlp.yaml --pilot
+=== 07:49:40 scripts/research/train_sources.py --config configs/mlp.yaml
+=== 09:26:48 scripts/research/run_comparison.py --config configs/mlp.yaml
+=== 11:48:49 scripts/research/run_importance_analysis.py --config configs/mlp.yaml
+=== 11:57:32 scripts/research/benchmark.py --config configs/mlp.yaml
+=== 11:57:56 scripts/research/analyze_results.py --config configs/mlp.yaml
+=== 11:58:07 scripts/research/run_ablation.py --config configs/mlp.yaml --pilot --which C
+=== 14:51:04 scripts/research/run_ablation.py --config configs/mlp.yaml --pilot --which A
+=== 00:48:07 scripts/research/analyze_results.py --config configs/mlp.yaml
+=== 00:48:25 PIPELINE DONE
