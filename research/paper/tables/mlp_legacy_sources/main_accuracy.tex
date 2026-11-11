@@ -3,21 +3,23 @@
 \caption{\texttt{mlp\_legacy\_sources}: test accuracy (\%, mean $\pm$ sample SD over 3 seeds) after 1 fine-tuning epoch(s). All criteria score the gated source; identical compact architectures per column.}
 \label{tab:mlp_legacy_sources_main}
 \footnotesize
+\setlength{\tabcolsep}{2.5pt}
 \begin{tabular}{lccc}
 \toprule
-Method & 20\% units removed & 40\% units removed & 60\% units removed \\
+ & \multicolumn{3}{c}{Hidden units removed} \\
+Method & 20\% & 40\% & 60\% \\
 \midrule
-Gate-in (existing) & 50.75 $\pm$ 0.31 & 49.17 $\pm$ 0.72 & 47.05 $\pm$ 0.39 \\
-Taylor & 51.91 $\pm$ 0.37 & 51.49 $\pm$ 0.51 & 51.03 $\pm$ 0.11 \\
-Activation & 51.80 $\pm$ 0.35 & 51.06 $\pm$ 0.49 & 49.96 $\pm$ 0.21 \\
-L1 in+out & 51.74 $\pm$ 0.47 & 51.51 $\pm$ 0.47 & 50.82 $\pm$ 0.19 \\
-L2 in+out & 51.82 $\pm$ 0.46 & 51.62 $\pm$ 0.23 & 50.70 $\pm$ 0.55 \\
-Gate-combined (V2) & 51.85 $\pm$ 0.28 & 51.35 $\pm$ 0.31 & 50.57 $\pm$ 0.19 \\
-Gate-out (V1) & 51.97 $\pm$ 0.43 & 51.38 $\pm$ 0.36 & 50.73 $\pm$ 0.43 \\
-Random & 51.62 $\pm$ 0.36 & 51.23 $\pm$ 0.35 & 50.14 $\pm$ 0.30 \\
+Gate-in (existing) & 50.75$\pm$0.31 & 49.17$\pm$0.72 & 47.05$\pm$0.39 \\
+Taylor & 51.91$\pm$0.37 & 51.49$\pm$0.51 & 51.03$\pm$0.11 \\
+Activation & 51.80$\pm$0.35 & 51.06$\pm$0.49 & 49.96$\pm$0.21 \\
+L1 in+out & 51.74$\pm$0.47 & 51.51$\pm$0.47 & 50.82$\pm$0.19 \\
+L2 in+out & 51.82$\pm$0.46 & 51.62$\pm$0.23 & 50.70$\pm$0.55 \\
+Gate-combined (V2) & 51.85$\pm$0.28 & 51.35$\pm$0.31 & 50.57$\pm$0.19 \\
+Gate-out (V1) & 51.97$\pm$0.43 & 51.38$\pm$0.36 & 50.73$\pm$0.43 \\
+Random & 51.62$\pm$0.36 & 51.23$\pm$0.35 & 50.14$\pm$0.30 \\
 \midrule
-Unpruned gated + FT & \multicolumn{3}{c}{52.09 $\pm$ 0.39} \\
-Unpruned dense + FT & \multicolumn{3}{c}{52.04 $\pm$ 0.41} \\
+Unpruned gated + FT & \multicolumn{3}{c}{52.09$\pm$0.39} \\
+Unpruned dense + FT & \multicolumn{3}{c}{52.04$\pm$0.41} \\
 \bottomrule
 \end{tabular}
 \end{table}
