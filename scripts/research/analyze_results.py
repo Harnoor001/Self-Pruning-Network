@@ -118,15 +118,17 @@ def paired_tests(frame: pd.DataFrame, primary_ft: int) -> pd.DataFrame:
 def fmt(mean, sd, scale=100.0, digits=2) -> str:
     if pd.isna(mean):
         return "--"
-    return f"{mean * scale:.{digits}f}" + ("" if pd.isna(sd) else f" $\\pm$ {sd * scale:.{digits}f}")
+    return f"{mean * scale:.{digits}f}" + ("" if pd.isna(sd) else f"$\\pm${sd * scale:.{digits}f}")
 
 
 def latex_main_table(summary: pd.DataFrame, primary_ft: int, methods: list[str], caption: str, tag: str) -> str:
     data = summary[summary["ft_epochs"] == primary_ft]
     ratios = sorted(r for r in data["target_ratio"].unique() if r > 0)
     lines = [r"\begin{table}[t]", r"\centering", r"\caption{" + caption + "}", r"\label{tab:" + tag + "}",
-             r"\footnotesize", r"\begin{tabular}{l" + "c" * len(ratios) + "}", r"\toprule",
-             "Method & " + " & ".join(f"{int(r * 100)}\\% units removed" for r in ratios) + r" \\", r"\midrule"]
+             r"\footnotesize", r"\setlength{\tabcolsep}{2.5pt}",
+             r"\begin{tabular}{l" + "c" * len(ratios) + "}", r"\toprule",
+             r" & \multicolumn{" + str(len(ratios)) + r"}{c}{Hidden units removed} \\",
+             "Method & " + " & ".join(f"{int(r * 100)}\\%" for r in ratios) + r" \\", r"\midrule"]
     for method in methods:
         cells = []
         for r in ratios:
@@ -367,7 +369,7 @@ def ablation_c_section(frame: pd.DataFrame, config: dict, primary_ft: int, paper
     means = data.groupby(["method", "target_ratio", "ft_epochs"])["test_accuracy"].mean().unstack("ft_epochs") * 100
     tex = [r"\begin{table}[t]", r"\centering",
            r"\caption{Ablation C: mean test accuracy (\%) versus fine-tuning epochs. The primary budget uses all seeds; the other budgets use the seeds on which ablation C was run (see findings.md for n per cell).}",
-           r"\label{tab:ablation_c}", r"\footnotesize",
+           r"\label{tab:ablation_c}", r"\footnotesize", r"\setlength{\tabcolsep}{4pt}",
            r"\begin{tabular}{ll" + "c" * means.shape[1] + "}", r"\toprule",
            "Method & Removed & " + " & ".join(f"{int(c)} ep" for c in means.columns) + r" \\", r"\midrule"]
     for (method, ratio), row in means.iterrows():
@@ -431,7 +433,7 @@ def ablation_a_section(ablation_a: pd.DataFrame, frame: pd.DataFrame, lambda_sou
     tex = [r"\begin{table}[t]", r"\centering",
            r"\caption{Ablation A: test accuracy (\%, mean over " + str(len(seeds)) +
            r" seeds) when the gated source is trained with different gate penalties.}",
-           r"\label{tab:ablation_a}", r"\footnotesize",
+           r"\label{tab:ablation_a}", r"\footnotesize", r"\setlength{\tabcolsep}{2.5pt}",
            r"\begin{tabular}{l" + "c" * (1 + len(criteria) * len(ratios)) + "}", r"\toprule",
            "Penalty & Source & " + " & ".join(CRITERION_LABEL.get(c, c) for _ in ratios for c in criteria) + r" \\",
            r"\midrule"]
@@ -444,7 +446,8 @@ def ablation_a_section(ablation_a: pd.DataFrame, frame: pd.DataFrame, lambda_sou
             for crit in criteria:
                 v = sub[(sub["criterion"] == crit) & (sub["target_ratio"] == ratio)]["test_accuracy"].mean()
                 cells.append("--" if pd.isna(v) else f"{v * 100:.2f}")
-        tex.append(describe_source(source).replace("λ", r"$\lambda$") + " & " + " & ".join(cells) + r" \\")
+        name = describe_source(source).replace(" (main gated source)", "").replace("λ", r"$\lambda$")
+        tex.append(name + " & " + " & ".join(cells) + r" \\")
     tex += [r"\bottomrule", r"\end{tabular}", r"\end{table}"]
     (paper_tab / "ablation_a.tex").write_text("\n".join(tex) + "\n", encoding="utf-8")
     # figure: accuracy per criterion across penalty settings

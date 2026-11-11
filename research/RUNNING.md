@@ -92,6 +92,32 @@ python scripts/research/benchmark.py       --config configs/vgg_cifar10.yaml --d
 python scripts/research/analyze_results.py --config configs/vgg_cifar10.yaml
 ```
 
+### 4b. Reduced-budget Stage B on a CPU (not the full protocol)
+
+`configs/vgg_cifar10_cpu.yaml` keeps the VGG-16-BN architecture, split, optimizer, ratios and
+selection rule, and cuts only the compute budget: 20-epoch sources (instead of 160), 3
+fine-tuning epochs (instead of 20), seeds 42/123/2024, 9 methods, 16 reliability units per
+layer, no ablations. The header of that file lists every deviation; results from it must be
+reported as reduced-budget results. About 10 min per source epoch on a 20-thread laptop CPU,
+roughly 15–18 h per seed.
+
+```bash
+bash scripts/research/run_vgg_cpu_pipeline.sh python     # one seed at a time, resumable
+```
+
+Outputs go to `artifacts/research/vgg16_cpu/`, separate from the full-protocol folder
+`artifacts/research/vgg16/`.
+
+## 4c. Compiling the manuscript
+
+Any LaTeX distribution works (`pdflatex` + `bibtex`). Without one, Tectonic is a single
+binary:
+
+```bash
+conda create -y -n texbuild --override-channels -c conda-forge tectonic
+cd research/paper && conda run -n texbuild tectonic main.tex
+```
+
 Do not launch Stage A and Stage B simultaneously on one GPU. Resource estimates are in
 `experimental_protocol.md` §13. Useful overrides: `--set data.num_workers=8`,
 `--set pruning.save_compact_checkpoints=true`.
