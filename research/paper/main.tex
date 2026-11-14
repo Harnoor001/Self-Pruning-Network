@@ -40,8 +40,11 @@ alternative criteria beat it (Holm-corrected paired $t$-test). Its scores were
 anti-correlated with single-neuron removal damage. Reading the same gates on the outgoing
 side, which batch normalization does not cancel, recovers the accuracy of magnitude
 criteria, and any positive gate penalty removes the failure, but no gate score exceeded
-the conventional criteria. A VGG-16 study is specified and implemented but was not
-executed in the available CPU-only environment.
+the conventional criteria. A reduced-budget VGG-16-BN study on CPU (20-epoch sources,
+three fine-tuning epochs, three seeds) points the same way: gate-in was below random at
+$40$ and $60\%$ channel removal ($83.6$ vs.\ $85.0\%$ at $60\%$), and at $60\%$ every other
+criterion beat it on all three seeds, but at $n=3$ only one of 24 differences survives Holm
+correction.
 \end{abstract}
 
 \begin{IEEEkeywords}
@@ -234,20 +237,24 @@ also reported with its original global ranking at the same total unit budget.
 \begin{itemize}
 \item \textbf{Executed scope.} The MLP study (five seeds), its ablations A and C (three
 seeds) and the verification on the original checkpoints were executed on CPU. The
-VGG-16-BN study is implemented and dry-run tested, but was not executed and no results are
-reported for it.
+VGG-16-BN study was executed only at a reduced budget (Section~\ref{sec:vgg}: 20 instead of
+160 source epochs, 3 instead of 20 fine-tuning epochs, 3 instead of 5 seeds, 9 of 16
+methods, no ablations); the full protocol is implemented but was not run.
 \item \textbf{Model quality.} The MLP sources reach about 60\% test accuracy on raw
 pixels; conclusions may differ for stronger models.
 \item \textbf{Statistical power.} With five seeds the exact Wilcoxon test cannot reach
 $p<0.0625$, so significance rests on the paired $t$-test, whose normality assumption is
-questionable for 4 of 45 comparisons. Ablations A and C (three seeds) are descriptive.
+questionable for 4 of 45 comparisons. Ablations A and C (three seeds) are descriptive. The
+VGG comparisons use three seeds (Wilcoxon floor $p=0.25$); only one survives Holm
+correction, so they are largely descriptive.
 \item \textbf{Confounds.} Network Slimming is evaluated on its own source, which is
 $0.6$\,pp weaker; global allocation changes the architecture and is not an equal-cost
 comparison.
-\item \textbf{Hardware.} Latency was measured on one CPU with one thread; no GPU was
-available, so no GPU latency or memory figures are reported.
-\item \textbf{Architecture.} An MLP on raw pixels is not representative of modern
-vision models; the CNN extension is required before generalizing.
+\item \textbf{Hardware.} Latency was measured on one laptop CPU; no GPU was available, so
+no GPU latency or memory figures are reported.
+\item \textbf{Architecture.} The MLP on raw pixels is not representative of modern vision
+models. The CNN evidence comes from one reduced-budget VGG-16-BN study whose gated source
+was trained with $\lambda=0$ only; the gate-penalty ablation was not repeated for VGG.
 \end{itemize}
 
 \section{Conclusion}

@@ -1,0 +1,17 @@
+=== 11-11 23:49:00 scripts/research/train_sources.py --config configs/vgg_cifar10_cpu.yaml --seeds 42
+=== 11-12 15:29:48 scripts/research/train_sources.py --config configs/vgg_cifar10_cpu.yaml --seeds 42
+=== 11-12 15:34:42 scripts/research/train_sources.py --config configs/vgg_cifar10_cpu.yaml --seeds 42
+=== 11-12 18:48:59 scripts/research/run_comparison.py --config configs/vgg_cifar10_cpu.yaml --seeds 42
+=== 11-13 03:18:39 scripts/research/run_importance_analysis.py --config configs/vgg_cifar10_cpu.yaml --seeds 42
+=== 11-13 05:12:55 interim analysis after seed 42
+=== 11-13 05:13:09 scripts/research/train_sources.py --config configs/vgg_cifar10_cpu.yaml --seeds 123
+=== 11-13 14:33:01 scripts/research/run_comparison.py --config configs/vgg_cifar10_cpu.yaml --seeds 123
+=== 11-13 22:22:33 scripts/research/run_importance_analysis.py --config configs/vgg_cifar10_cpu.yaml --seeds 123
+=== 11-14 00:14:43 interim analysis after seed 123
+=== 11-14 00:14:58 scripts/research/train_sources.py --config configs/vgg_cifar10_cpu.yaml --seeds 2024
+=== 11-14 10:36:50 scripts/research/run_comparison.py --config configs/vgg_cifar10_cpu.yaml --seeds 2024
+=== 11-14 17:59:30 scripts/research/run_importance_analysis.py --config configs/vgg_cifar10_cpu.yaml --seeds 2024
+=== 11-14 19:27:26 interim analysis after seed 2024
+=== 11-14 19:27:47 scripts/research/benchmark.py --config configs/vgg_cifar10_cpu.yaml
+=== 11-14 19:31:59 scripts/research/analyze_results.py --config configs/vgg_cifar10_cpu.yaml
+=== 11-14 19:32:13 PIPELINE DONE

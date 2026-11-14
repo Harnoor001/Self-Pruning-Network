@@ -1,7 +1,8 @@
 % Generated from artifacts/research/mlp/analysis/{findings.md,summary.csv,paired_tests.csv,
 % reliability_summary.csv,stability_summary.csv,ablation_a_summary.csv,
 % ablation_a_gate_statistics.csv}, artifacts/research/mlp/benchmark/benchmark_results.csv,
-% and (Section~\ref{sec:legacy}) artifacts/research/mlp_legacy_sources/.
+% (Section~\ref{sec:legacy}) artifacts/research/mlp_legacy_sources/, and (Section~\ref{sec:vgg})
+% artifacts/research/vgg16_cpu/ (reduced-budget run of configs/vgg_cifar10_cpu.yaml).
 % Every number below is traceable to those files (see research/results_analysis.md).
 
 \textbf{Executed experiments.} The main study follows the research protocol
@@ -10,7 +11,8 @@ for five seeds, 5 fine-tuning epochs for every compact model, and ablations A an
 three seeds. All of it ran on CPU (23\,h). The sources reach $60.06\pm0.17$ (dense),
 $60.14\pm0.16$ (gated) and $59.51\pm0.08\%$ (Slimming) test accuracy.
 Section~\ref{sec:legacy} summarizes the earlier verification on the original 5-epoch
-checkpoints. The VGG-16-BN study was not executed (no GPU).
+checkpoints; Section~\ref{sec:vgg} reports a reduced-budget VGG-16-BN study, also on CPU.
+The full-budget VGG-16-BN protocol was not executed (no GPU).
 
 \subsection{Pruning accuracy (RQ1, RQ2)}
 Table~\ref{tab:mlp_main} and Fig.~\ref{fig:acc} show test accuracy after fine-tuning.
@@ -104,6 +106,58 @@ own original split). The outcome was the same: gate-in was below random at every
 ($47.05$ vs.\ $50.14\%$ at $60\%$), all 13 alternatives beat it on every seed, and its
 scores were negatively correlated with removal damage ($\rho=-0.119\pm0.039$). Full tables
 are in \texttt{research/results\_analysis.md}, Part~II.
+
+\subsection{Reduced-budget VGG-16-BN on CIFAR-10}\label{sec:vgg}
+\textbf{Setup and deviations.} VGG-16-BN with a gate on every convolution weight, the same
+fixed split and the selection rule above (\texttt{configs/vgg\_cifar10\_cpu.yaml}). Dense,
+gated ($\lambda=0$) and Slimming sources are trained with SGD (Nesterov, learning rate
+$0.05$, weight decay $5\times10^{-4}$, none on gates, cosine schedule). Because only a CPU
+was available, the budget is reduced relative to the specified protocol: \textbf{20 instead
+of 160 source epochs, 3 instead of 20 fine-tuning epochs (SGD, $0.01$), seeds 42, 123 and
+2024 instead of five, 9 of 16 methods, 16 instead of 64 reliability units per layer, and no
+ablations}. The run took about 20\,h per seed. The sources reach $89.55\pm0.42$ (dense),
+$90.41\pm0.36$ (gated) and $89.76\pm0.16\%$ (Slimming) test accuracy and were still
+improving at epoch 20. These results are not results of the full protocol.
+
+\textbf{Accuracy.} Table~\ref{tab:vgg16_cpu_main} and Fig.~\ref{fig:vgg_acc} show the same
+direction as the MLP. Gate-in is the lowest criterion at $40$ and $60\%$ channel removal
+($87.32$ and $83.60\%$), below random ($87.59$ and $85.02\%$), while Taylor and $\ell_1$
+reach $88.9$ and $86.8\%$. At $20\%$ all criteria lie within $0.9$\,pp and gate-in
+($89.45\%$) is indistinguishable from random ($89.31\%$). Before fine-tuning, removing
+$20\%$ of channels by gate-in leaves the network at chance ($10.3\%$), against $25.3\%$
+for random and $65$--$70\%$ for $\ell_1$ and Slimming. Every non-random method beats gate-in
+on all three seeds at $40\%$ (by $1.1$--$1.6$\,pp) and every method at $60\%$ (by
+$2.7$--$3.2$\,pp; random by $1.4$\,pp). With $n=3$, however, only Taylor at $40\%$
+survives Holm correction ($+1.62$\,pp, 95\% CI $[1.28,1.97]$, adjusted $p=0.019$); at
+$60\%$ the smallest adjusted $p$ is $0.064$. The VGG evidence is therefore consistent with,
+but much weaker than, the MLP result. Parameters fall by $35.8$, $63.8$ and $83.9\%$
+($14.7$\,M$\to2.4$\,M at $60\%$); measured CPU latency at batch size 64 falls from $499$ to
+$354$, $297$ and $147$\,ms.
+
+\input{tables/vgg16_cpu/main_accuracy.tex}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.85\columnwidth]{vgg16_cpu/fig_accuracy_vs_ratio.pdf}
+\caption{Reduced-budget VGG-16-BN (20-epoch sources): test accuracy after three
+fine-tuning epochs (mean $\pm$ SD, 3 seeds). Dashed: unpruned gated model with the same
+fine-tuning budget.}
+\label{fig:vgg_acc}
+\end{figure}
+
+\textbf{Gate statistics and reliability.} With $\lambda=0$ and SGD the gates barely moved:
+every layer's mean gate is $\sigma(2)=0.881$ to three decimals, and the within-layer
+coefficient of variation of the gate-in score is about $6\times10^{-8}$ (gate-out
+$\approx2\times10^{-7}$), against $0.07$ for $\ell_1$ and $0.4$--$0.5$ for Taylor, so the
+rankings rest on displacements near float32 resolution. They are nevertheless not neutral:
+gate-in is worse than random, whereas gate-out ranks channels about as well as $\ell_1$, the
+same incoming/outgoing contrast as in the MLP. Spearman correlations with single-channel
+removal damage are weak for every criterion ($0.10$--$0.20$ for non-random criteria on the
+gated source) and lowest for gate-in ($0.033\pm0.053$), which is strongly negative only in
+the first convolution ($\rho=-0.67$). $42\%$ of single-channel removals lower the
+validation loss, so per-layer correlations in the deeper layers are dominated by noise.
+Whether a positive gate penalty would remove the VGG deficit, as it did for the MLP, was not
+tested.
 
 \section{Ablation Studies}\label{sec:ablation}
 The framework defines five ablations: A, gate penalty strength; B, gate aggregation

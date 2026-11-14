@@ -1,4 +1,5 @@
-% Conclusions are limited to the executed MLP experiments (Section~\ref{sec:results}).
+% Conclusions are limited to the executed experiments (Section~\ref{sec:results}): the MLP
+% study and the reduced-budget VGG-16-BN study.
 We asked whether the learnable connection gates of an existing self-pruning MLP identify
 prunable neurons. Every criterion used the same compact architectures, fine-tuning budget
 and validation-based selection, over five seeds with 30-epoch sources. In the setting the
@@ -20,6 +21,12 @@ compact reconstruction. The results do \emph{not} show that gate-based criteria 
 than conventional ones, and they establish no ranking among the conventional criteria,
 which were not tested against each other.
 
-These conclusions rest on a single MLP architecture on raw CIFAR-10 pixels, CPU-only
-measurements, and three seeds for the ablations. The implemented VGG-16-BN study is the
-necessary next step before the findings can be generalized to convolutional networks.
+A reduced-budget VGG-16-BN study (20-epoch sources, three fine-tuning epochs, three seeds)
+points in the same direction: gate-in fell below random at $40$ and $60\%$ channel removal
+and lost to every other criterion on every seed at $60\%$. With three seeds, however, only
+one comparison survives multiple-testing correction, so this is supporting rather than
+independent evidence for convolutional networks. The main conclusions rest on one MLP
+architecture on raw CIFAR-10 pixels, CPU-only measurements and three seeds for the
+ablations. The full VGG-16-BN protocol (160-epoch sources, 20 fine-tuning epochs, five
+seeds, gate-penalty ablation) on a GPU is the necessary next step before the findings can
+be generalized.

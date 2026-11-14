@@ -1,0 +1,647 @@
+23:49:02 environment: torch 2.11.0+cpu cuda=False gpu=none python 3.11.9
+23:49:02 config=configs/vgg_cifar10_cpu.yaml seeds=[42] device=cpu dry_run=False
+23:49:02 NOTE: running on CPU. No GPU results are produced by this invocation.
+C:\Users\sharn\OneDrive\Desktop\PROJECTS\Self pruning Network\src\self_pruning_network\research_data.py:29: VisibleDeprecationWarning: dtype(): align should be passed as Python or NumPy boolean but got `align=0`. Did you mean to pass a tuple to create a subarray type? (Deprecated NumPy 2.4)
+  entry = pickle.load(handle, encoding="latin1")
+23:49:07 training source dense seed 42 (20 epochs)
+23:59:30 [dense/s42] epoch 1/20 train_loss=2.4369 val_acc=0.1882 (590.2s)
+00:09:37 [dense/s42] epoch 2/20 train_loss=1.8172 val_acc=0.2878 (593.8s)
+00:19:50 [dense/s42] epoch 3/20 train_loss=1.5785 val_acc=0.4780 (597.8s)
+00:30:19 [dense/s42] epoch 4/20 train_loss=1.2583 val_acc=0.5766 (613.2s)
+00:40:52 [dense/s42] epoch 5/20 train_loss=1.0000 val_acc=0.6596 (616.1s)
+00:51:19 [dense/s42] epoch 6/20 train_loss=0.8110 val_acc=0.7176 (610.2s)
+01:01:43 [dense/s42] epoch 7/20 train_loss=0.6927 val_acc=0.7652 (608.0s)
+01:12:11 [dense/s42] epoch 8/20 train_loss=0.6119 val_acc=0.7560 (611.9s)
+01:22:36 [dense/s42] epoch 9/20 train_loss=0.5466 val_acc=0.7854 (608.5s)
+01:33:08 [dense/s42] epoch 10/20 train_loss=0.4903 val_acc=0.8088 (615.9s)
+01:43:34 [dense/s42] epoch 11/20 train_loss=0.4453 val_acc=0.8028 (609.2s)
+01:54:02 [dense/s42] epoch 12/20 train_loss=0.4015 val_acc=0.8348 (612.0s)
+02:02:46 [dense/s42] epoch 13/20 train_loss=0.3575 val_acc=0.8504 (512.2s)
+02:11:17 [dense/s42] epoch 14/20 train_loss=0.3127 val_acc=0.8654 (497.9s)
+02:19:40 [dense/s42] epoch 15/20 train_loss=0.2727 val_acc=0.8766 (490.7s)
+02:28:03 [dense/s42] epoch 16/20 train_loss=0.2372 val_acc=0.8834 (489.4s)
+02:36:26 [dense/s42] epoch 17/20 train_loss=0.2058 val_acc=0.8892 (490.7s)
+02:44:57 [dense/s42] epoch 18/20 train_loss=0.1749 val_acc=0.8932 (500.2s)
+02:53:39 [dense/s42] epoch 19/20 train_loss=0.1551 val_acc=0.8992 (510.3s)
+03:02:09 [dense/s42] epoch 20/20 train_loss=0.1405 val_acc=0.9020 (497.0s)
+03:02:52 seed 42 dense: val 0.9020 test 0.8957
+03:02:52 training source gated seed 42 (20 epochs)
+03:11:44 [gated/s42] epoch 1/20 train_loss=2.1944 val_acc=0.3272 (519.8s)
+03:20:23 [gated/s42] epoch 2/20 train_loss=1.5187 val_acc=0.5214 (505.7s)
+03:29:02 [gated/s42] epoch 3/20 train_loss=1.1106 val_acc=0.6024 (506.6s)
+03:39:17 [gated/s42] epoch 4/20 train_loss=0.8623 val_acc=0.6980 (596.9s)
+03:50:53 [gated/s42] epoch 5/20 train_loss=0.7117 val_acc=0.7228 (678.4s)
+04:02:37 [gated/s42] epoch 6/20 train_loss=0.6192 val_acc=0.7764 (690.5s)
+04:11:42 [gated/s42] epoch 7/20 train_loss=0.5516 val_acc=0.8002 (533.2s)
+04:20:31 [gated/s42] epoch 8/20 train_loss=0.4945 val_acc=0.7750 (515.9s)
+04:29:15 [gated/s42] epoch 9/20 train_loss=0.4432 val_acc=0.8264 (511.1s)
+04:37:55 [gated/s42] epoch 10/20 train_loss=0.3932 val_acc=0.8458 (507.5s)
+04:46:50 [gated/s42] epoch 11/20 train_loss=0.3602 val_acc=0.8306 (521.9s)
+04:55:35 [gated/s42] epoch 12/20 train_loss=0.3164 val_acc=0.8568 (512.1s)
+05:04:32 [gated/s42] epoch 13/20 train_loss=0.2837 val_acc=0.8684 (524.4s)
+05:13:26 [gated/s42] epoch 14/20 train_loss=0.2404 val_acc=0.8728 (520.6s)
+05:22:31 [gated/s42] epoch 15/20 train_loss=0.2093 val_acc=0.8836 (531.4s)
+05:31:31 [gated/s42] epoch 16/20 train_loss=0.1777 val_acc=0.8946 (527.1s)
+05:40:35 [gated/s42] epoch 17/20 train_loss=0.1453 val_acc=0.9042 (530.2s)
+05:49:26 [gated/s42] epoch 18/20 train_loss=0.1206 val_acc=0.9042 (517.6s)
+05:58:15 [gated/s42] epoch 19/20 train_loss=0.1020 val_acc=0.9068 (516.6s)
+06:07:16 [gated/s42] epoch 20/20 train_loss=0.0938 val_acc=0.9070 (527.8s)
+06:07:55 seed 42 gated: val 0.9070 test 0.9038
+06:07:55 training source slimming seed 42 (20 epochs)
+15:30:01 environment: torch 2.11.0+cpu cuda=False gpu=none python 3.11.9
+15:30:01 config=configs/vgg_cifar10_cpu.yaml seeds=[42] device=cpu dry_run=False
+15:30:01 NOTE: running on CPU. No GPU results are produced by this invocation.
+C:\Users\sharn\OneDrive\Desktop\PROJECTS\Self pruning Network\src\self_pruning_network\research_data.py:29: VisibleDeprecationWarning: dtype(): align should be passed as Python or NumPy boolean but got `align=0`. Did you mean to pass a tuple to create a subarray type? (Deprecated NumPy 2.4)
+  entry = pickle.load(handle, encoding="latin1")
+15:30:05 seed 42 dense: val 0.9020 test 0.8957
+15:30:05 seed 42 gated: val 0.9070 test 0.9038
+15:30:05 training source slimming seed 42 (20 epochs)
+15:34:52 environment: torch 2.11.0+cpu cuda=False gpu=none python 3.11.9
+15:34:52 config=configs/vgg_cifar10_cpu.yaml seeds=[42] device=cpu dry_run=False
+15:34:52 NOTE: running on CPU. No GPU results are produced by this invocation.
+C:\Users\sharn\OneDrive\Desktop\PROJECTS\Self pruning Network\src\self_pruning_network\research_data.py:29: VisibleDeprecationWarning: dtype(): align should be passed as Python or NumPy boolean but got `align=0`. Did you mean to pass a tuple to create a subarray type? (Deprecated NumPy 2.4)
+  entry = pickle.load(handle, encoding="latin1")
+15:35:01 seed 42 dense: val 0.9020 test 0.8957
+15:35:02 seed 42 gated: val 0.9070 test 0.9038
+15:35:02 training source slimming seed 42 (20 epochs)
+15:46:18 [slimming/s42] epoch 1/20 train_loss=2.3809 val_acc=0.2682 (642.2s)
+15:56:08 [slimming/s42] epoch 2/20 train_loss=1.7195 val_acc=0.4274 (577.9s)
+16:06:35 [slimming/s42] epoch 3/20 train_loss=1.3982 val_acc=0.5420 (610.3s)
+16:17:09 [slimming/s42] epoch 4/20 train_loss=1.0954 val_acc=0.6024 (617.9s)
+16:28:14 [slimming/s42] epoch 5/20 train_loss=0.9023 val_acc=0.6836 (646.3s)
+16:39:21 [slimming/s42] epoch 6/20 train_loss=0.7652 val_acc=0.7256 (649.8s)
+16:50:09 [slimming/s42] epoch 7/20 train_loss=0.6645 val_acc=0.7702 (631.2s)
+17:01:33 [slimming/s42] epoch 8/20 train_loss=0.5941 val_acc=0.7578 (666.5s)
+17:12:55 [slimming/s42] epoch 9/20 train_loss=0.5326 val_acc=0.7930 (665.0s)
+17:24:05 [slimming/s42] epoch 10/20 train_loss=0.4784 val_acc=0.8260 (653.5s)
+17:33:40 [slimming/s42] epoch 11/20 train_loss=0.4368 val_acc=0.8132 (562.9s)
+17:42:03 [slimming/s42] epoch 12/20 train_loss=0.3920 val_acc=0.8414 (491.4s)
+17:50:16 [slimming/s42] epoch 13/20 train_loss=0.3496 val_acc=0.8218 (480.6s)
+17:58:34 [slimming/s42] epoch 14/20 train_loss=0.3049 val_acc=0.8522 (485.2s)
+18:06:47 [slimming/s42] epoch 15/20 train_loss=0.2705 val_acc=0.8728 (480.7s)
+18:15:01 [slimming/s42] epoch 16/20 train_loss=0.2303 val_acc=0.8822 (480.5s)
+18:23:14 [slimming/s42] epoch 17/20 train_loss=0.1978 val_acc=0.8906 (480.4s)
+18:31:28 [slimming/s42] epoch 18/20 train_loss=0.1692 val_acc=0.8914 (481.1s)
+18:39:57 [slimming/s42] epoch 19/20 train_loss=0.1519 val_acc=0.8980 (496.9s)
+18:48:10 [slimming/s42] epoch 20/20 train_loss=0.1359 val_acc=0.8988 (480.4s)
+18:48:53 seed 42 slimming: val 0.8988 test 0.8970
+18:49:02 environment: torch 2.11.0+cpu cuda=False gpu=none python 3.11.9
+18:49:02 config=configs/vgg_cifar10_cpu.yaml seeds=[42] device=cpu dry_run=False
+18:49:02 NOTE: running on CPU. No GPU results are produced by this invocation.
+C:\Users\sharn\OneDrive\Desktop\PROJECTS\Self pruning Network\src\self_pruning_network\research_data.py:29: VisibleDeprecationWarning: dtype(): align should be passed as Python or NumPy boolean but got `align=0`. Did you mean to pass a tuple to create a subarray type? (Deprecated NumPy 2.4)
+  entry = pickle.load(handle, encoding="latin1")
+18:49:05 seed 42: 30 result rows planned, 30 pending
+19:03:34 [control@dense] epoch 1/3 train_loss=0.2292 val_acc=0.8770 (678.6s)
+19:14:09 [control@dense] epoch 2/3 train_loss=0.2035 val_acc=0.8854 (618.5s)
+19:24:35 [control@dense] epoch 3/3 train_loss=0.1551 val_acc=0.8966 (610.2s)
+19:36:56 [control@gated] epoch 1/3 train_loss=0.1997 val_acc=0.8792 (612.2s)
+19:47:24 [control@gated] epoch 2/3 train_loss=0.1710 val_acc=0.8936 (611.2s)
+19:57:50 [control@gated] epoch 3/3 train_loss=0.1137 val_acc=0.9066 (609.9s)
+20:10:04 [control@slimming] epoch 1/3 train_loss=0.2304 val_acc=0.8692 (605.7s)
+20:20:25 [control@slimming] epoch 2/3 train_loss=0.1987 val_acc=0.8866 (604.3s)
+20:30:46 [control@slimming] epoch 3/3 train_loss=0.1469 val_acc=0.8980 (605.1s)
+20:39:44 [random@gated r=0.2 ft=3] epoch 1/3 train_loss=0.3241 val_acc=0.8658 (431.6s)
+20:47:13 [random@gated r=0.2 ft=3] epoch 2/3 train_loss=0.2483 val_acc=0.8708 (437.5s)
+20:54:41 [random@gated r=0.2 ft=3] epoch 3/3 train_loss=0.1737 val_acc=0.8988 (436.0s)
+20:55:16 seed 42 random@gated                 r=0.20 ft=3: pre 0.4466 -> val 0.8988 test 0.8956
+20:59:54 [random@gated r=0.4 ft=3] epoch 1/3 train_loss=0.4832 val_acc=0.8296 (240.9s)
+21:04:05 [random@gated r=0.4 ft=3] epoch 2/3 train_loss=0.3570 val_acc=0.8456 (243.7s)
+21:08:17 [random@gated r=0.4 ft=3] epoch 3/3 train_loss=0.2556 val_acc=0.8908 (244.3s)
+21:08:38 seed 42 random@gated                 r=0.40 ft=3: pre 0.1018 -> val 0.8908 test 0.8768
+21:11:07 [random@gated r=0.6 ft=3] epoch 1/3 train_loss=0.7737 val_acc=0.7678 (127.9s)
+21:13:21 [random@gated r=0.6 ft=3] epoch 2/3 train_loss=0.5261 val_acc=0.7976 (129.4s)
+21:15:31 [random@gated r=0.6 ft=3] epoch 3/3 train_loss=0.3997 val_acc=0.8554 (126.1s)
+21:15:43 seed 42 random@gated                 r=0.60 ft=3: pre 0.1018 -> val 0.8554 test 0.8487
+21:23:55 [l1@gated r=0.2 ft=3] epoch 1/3 train_loss=0.2722 val_acc=0.8606 (432.6s)
+21:31:18 [l1@gated r=0.2 ft=3] epoch 2/3 train_loss=0.2152 val_acc=0.8780 (432.2s)
+21:38:49 [l1@gated r=0.2 ft=3] epoch 3/3 train_loss=0.1476 val_acc=0.9020 (438.9s)
+21:39:24 seed 42 l1@gated                     r=0.20 ft=3: pre 0.6620 -> val 0.9020 test 0.8980
+21:44:05 [l1@gated r=0.4 ft=3] epoch 1/3 train_loss=0.3956 val_acc=0.8514 (244.0s)
+21:48:17 [l1@gated r=0.4 ft=3] epoch 2/3 train_loss=0.2945 val_acc=0.8660 (244.8s)
+21:52:27 [l1@gated r=0.4 ft=3] epoch 3/3 train_loss=0.2151 val_acc=0.8964 (243.0s)
+21:52:49 seed 42 l1@gated                     r=0.40 ft=3: pre 0.1976 -> val 0.8964 test 0.8886
+21:55:18 [l1@gated r=0.6 ft=3] epoch 1/3 train_loss=0.5925 val_acc=0.7660 (126.9s)
+21:57:27 [l1@gated r=0.6 ft=3] epoch 2/3 train_loss=0.4293 val_acc=0.8440 (124.7s)
+21:59:35 [l1@gated r=0.6 ft=3] epoch 3/3 train_loss=0.3318 val_acc=0.8732 (124.0s)
+21:59:47 seed 42 l1@gated                     r=0.60 ft=3: pre 0.1018 -> val 0.8732 test 0.8666
+22:08:21 [taylor@gated r=0.2 ft=3] epoch 1/3 train_loss=0.2812 val_acc=0.8680 (427.8s)
+22:16:14 [taylor@gated r=0.2 ft=3] epoch 2/3 train_loss=0.2189 val_acc=0.8786 (460.8s)
+22:24:05 [taylor@gated r=0.2 ft=3] epoch 3/3 train_loss=0.1509 val_acc=0.8962 (459.4s)
+22:24:40 seed 42 taylor@gated                 r=0.20 ft=3: pre 0.5342 -> val 0.8962 test 0.8999
+22:29:19 [taylor@gated r=0.4 ft=3] epoch 1/3 train_loss=0.4151 val_acc=0.8564 (241.5s)
+22:33:35 [taylor@gated r=0.4 ft=3] epoch 2/3 train_loss=0.3008 val_acc=0.8616 (248.9s)
+22:37:49 [taylor@gated r=0.4 ft=3] epoch 3/3 train_loss=0.2168 val_acc=0.8936 (247.1s)
+22:38:11 seed 42 taylor@gated                 r=0.40 ft=3: pre 0.1580 -> val 0.8936 test 0.8908
+22:40:50 [taylor@gated r=0.6 ft=3] epoch 1/3 train_loss=0.6500 val_acc=0.8134 (138.7s)
+22:43:10 [taylor@gated r=0.6 ft=3] epoch 2/3 train_loss=0.4423 val_acc=0.8222 (135.4s)
+22:45:29 [taylor@gated r=0.6 ft=3] epoch 3/3 train_loss=0.3394 val_acc=0.8708 (134.9s)
+22:45:42 seed 42 taylor@gated                 r=0.60 ft=3: pre 0.1018 -> val 0.8708 test 0.8663
+22:54:21 [gate_in@gated r=0.2 ft=3] epoch 1/3 train_loss=0.3697 val_acc=0.8340 (457.3s)
+23:02:23 [gate_in@gated r=0.2 ft=3] epoch 2/3 train_loss=0.2647 val_acc=0.8830 (470.0s)
+23:10:20 [gate_in@gated r=0.2 ft=3] epoch 3/3 train_loss=0.1805 val_acc=0.8918 (464.8s)
+23:10:56 seed 42 gate_in@gated                r=0.20 ft=3: pre 0.1040 -> val 0.8918 test 0.8904
+23:15:54 [gate_in@gated r=0.4 ft=3] epoch 1/3 train_loss=0.6141 val_acc=0.8178 (259.8s)
+23:20:34 [gate_in@gated r=0.4 ft=3] epoch 2/3 train_loss=0.3972 val_acc=0.8442 (272.6s)
+23:25:08 [gate_in@gated r=0.4 ft=3] epoch 3/3 train_loss=0.2830 val_acc=0.8774 (266.1s)
+23:25:29 seed 42 gate_in@gated                r=0.40 ft=3: pre 0.1018 -> val 0.8774 test 0.8742
+23:28:14 [gate_in@gated r=0.6 ft=3] epoch 1/3 train_loss=1.1061 val_acc=0.7224 (141.2s)
+23:30:27 [gate_in@gated r=0.6 ft=3] epoch 2/3 train_loss=0.6513 val_acc=0.7662 (129.1s)
+23:32:42 [gate_in@gated r=0.6 ft=3] epoch 3/3 train_loss=0.4869 val_acc=0.8254 (131.3s)
+23:32:54 seed 42 gate_in@gated                r=0.60 ft=3: pre 0.1018 -> val 0.8254 test 0.8264
+23:41:40 [gate_out@gated r=0.2 ft=3] epoch 1/3 train_loss=0.2950 val_acc=0.8668 (463.9s)
+23:49:31 [gate_out@gated r=0.2 ft=3] epoch 2/3 train_loss=0.2294 val_acc=0.8844 (459.3s)
+23:56:56 [gate_out@gated r=0.2 ft=3] epoch 3/3 train_loss=0.1601 val_acc=0.8984 (433.8s)
+23:57:31 seed 42 gate_out@gated               r=0.20 ft=3: pre 0.6682 -> val 0.8984 test 0.8933
+00:02:41 [gate_out@gated r=0.4 ft=3] epoch 1/3 train_loss=0.4398 val_acc=0.8422 (276.5s)
+00:07:20 [gate_out@gated r=0.4 ft=3] epoch 2/3 train_loss=0.3213 val_acc=0.8638 (271.5s)
+00:11:48 [gate_out@gated r=0.4 ft=3] epoch 3/3 train_loss=0.2310 val_acc=0.8932 (261.2s)
+00:12:08 seed 42 gate_out@gated               r=0.40 ft=3: pre 0.1920 -> val 0.8932 test 0.8820
+00:14:43 [gate_out@gated r=0.6 ft=3] epoch 1/3 train_loss=0.6530 val_acc=0.7932 (133.0s)
+00:16:56 [gate_out@gated r=0.6 ft=3] epoch 2/3 train_loss=0.4614 val_acc=0.8266 (128.7s)
+00:19:18 [gate_out@gated r=0.6 ft=3] epoch 3/3 train_loss=0.3593 val_acc=0.8610 (137.2s)
+00:19:31 seed 42 gate_out@gated               r=0.60 ft=3: pre 0.1018 -> val 0.8610 test 0.8652
+00:28:16 [gate_combined@gated r=0.2 ft=3] epoch 1/3 train_loss=0.2945 val_acc=0.8658 (463.5s)
+00:36:09 [gate_combined@gated r=0.2 ft=3] epoch 2/3 train_loss=0.2316 val_acc=0.8772 (461.1s)
+00:43:52 [gate_combined@gated r=0.2 ft=3] epoch 3/3 train_loss=0.1583 val_acc=0.9018 (452.0s)
+00:44:27 seed 42 gate_combined@gated          r=0.20 ft=3: pre 0.6602 -> val 0.9018 test 0.8975
+00:49:17 [gate_combined@gated r=0.4 ft=3] epoch 1/3 train_loss=0.4404 val_acc=0.8382 (253.2s)
+00:53:33 [gate_combined@gated r=0.4 ft=3] epoch 2/3 train_loss=0.3223 val_acc=0.8578 (248.7s)
+00:57:44 [gate_combined@gated r=0.4 ft=3] epoch 3/3 train_loss=0.2307 val_acc=0.8934 (243.6s)
+00:58:06 seed 42 gate_combined@gated          r=0.40 ft=3: pre 0.1508 -> val 0.8934 test 0.8875
+01:00:37 [gate_combined@gated r=0.6 ft=3] epoch 1/3 train_loss=0.6535 val_acc=0.8026 (129.7s)
+01:02:51 [gate_combined@gated r=0.6 ft=3] epoch 2/3 train_loss=0.4654 val_acc=0.8256 (129.7s)
+01:05:08 [gate_combined@gated r=0.6 ft=3] epoch 3/3 train_loss=0.3622 val_acc=0.8652 (132.9s)
+01:05:20 seed 42 gate_combined@gated          r=0.60 ft=3: pre 0.1018 -> val 0.8652 test 0.8628
+01:13:26 [bn_gamma@gated r=0.2 ft=3] epoch 1/3 train_loss=0.2925 val_acc=0.8760 (427.7s)
+01:20:51 [bn_gamma@gated r=0.2 ft=3] epoch 2/3 train_loss=0.2230 val_acc=0.8818 (433.0s)
+01:28:12 [bn_gamma@gated r=0.2 ft=3] epoch 3/3 train_loss=0.1548 val_acc=0.9054 (429.2s)
+01:28:46 seed 42 bn_gamma@gated               r=0.20 ft=3: pre 0.5396 -> val 0.9054 test 0.8947
+01:33:30 [bn_gamma@gated r=0.4 ft=3] epoch 1/3 train_loss=0.4163 val_acc=0.8512 (247.6s)
+01:37:44 [bn_gamma@gated r=0.4 ft=3] epoch 2/3 train_loss=0.3036 val_acc=0.8640 (246.1s)
+01:42:02 [bn_gamma@gated r=0.4 ft=3] epoch 3/3 train_loss=0.2187 val_acc=0.8936 (250.7s)
+01:42:24 seed 42 bn_gamma@gated               r=0.40 ft=3: pre 0.2192 -> val 0.8936 test 0.8869
+01:44:56 [bn_gamma@gated r=0.6 ft=3] epoch 1/3 train_loss=0.6594 val_acc=0.7760 (129.6s)
+01:47:11 [bn_gamma@gated r=0.6 ft=3] epoch 2/3 train_loss=0.4582 val_acc=0.8192 (131.5s)
+01:49:29 [bn_gamma@gated r=0.6 ft=3] epoch 3/3 train_loss=0.3507 val_acc=0.8718 (133.5s)
+01:49:41 seed 42 bn_gamma@gated               r=0.60 ft=3: pre 0.1040 -> val 0.8718 test 0.8592
+01:57:50 [l1@dense r=0.2 ft=3] epoch 1/3 train_loss=0.2722 val_acc=0.8770 (430.8s)
+02:05:10 [l1@dense r=0.2 ft=3] epoch 2/3 train_loss=0.2309 val_acc=0.8792 (429.2s)
+02:12:36 [l1@dense r=0.2 ft=3] epoch 3/3 train_loss=0.1716 val_acc=0.8996 (434.5s)
+02:13:11 seed 42 l1@dense                     r=0.20 ft=3: pre 0.7228 -> val 0.8996 test 0.8906
+02:17:52 [l1@dense r=0.4 ft=3] epoch 1/3 train_loss=0.3577 val_acc=0.8598 (244.0s)
+02:22:05 [l1@dense r=0.4 ft=3] epoch 2/3 train_loss=0.2899 val_acc=0.8572 (245.7s)
+02:26:18 [l1@dense r=0.4 ft=3] epoch 3/3 train_loss=0.2264 val_acc=0.8888 (245.5s)
+02:26:39 seed 42 l1@dense                     r=0.40 ft=3: pre 0.3064 -> val 0.8888 test 0.8828
+02:29:13 [l1@dense r=0.6 ft=3] epoch 1/3 train_loss=0.5261 val_acc=0.8240 (132.0s)
+02:31:27 [l1@dense r=0.6 ft=3] epoch 2/3 train_loss=0.4011 val_acc=0.8428 (129.8s)
+02:33:39 [l1@dense r=0.6 ft=3] epoch 3/3 train_loss=0.3269 val_acc=0.8702 (128.4s)
+02:33:52 seed 42 l1@dense                     r=0.60 ft=3: pre 0.1018 -> val 0.8702 test 0.8690
+02:42:08 [slimming@slimming r=0.2 ft=3] epoch 1/3 train_loss=0.2742 val_acc=0.8636 (437.9s)
+02:49:42 [slimming@slimming r=0.2 ft=3] epoch 2/3 train_loss=0.2288 val_acc=0.8780 (442.7s)
+02:57:12 [slimming@slimming r=0.2 ft=3] epoch 3/3 train_loss=0.1694 val_acc=0.8964 (438.5s)
+02:57:47 seed 42 slimming@slimming            r=0.20 ft=3: pre 0.6574 -> val 0.8964 test 0.8922
+03:02:36 [slimming@slimming r=0.4 ft=3] epoch 1/3 train_loss=0.3820 val_acc=0.8454 (252.7s)
+03:06:51 [slimming@slimming r=0.4 ft=3] epoch 2/3 train_loss=0.2916 val_acc=0.8632 (247.7s)
+03:11:07 [slimming@slimming r=0.4 ft=3] epoch 3/3 train_loss=0.2221 val_acc=0.8850 (248.6s)
+03:11:29 seed 42 slimming@slimming            r=0.40 ft=3: pre 0.2638 -> val 0.8850 test 0.8855
+03:13:55 [slimming@slimming r=0.6 ft=3] epoch 1/3 train_loss=0.5843 val_acc=0.8146 (125.7s)
+03:16:11 [slimming@slimming r=0.6 ft=3] epoch 2/3 train_loss=0.4244 val_acc=0.8286 (131.7s)
+03:18:18 [slimming@slimming r=0.6 ft=3] epoch 3/3 train_loss=0.3343 val_acc=0.8600 (123.0s)
+03:18:31 seed 42 slimming@slimming            r=0.60 ft=3: pre 0.1022 -> val 0.8600 test 0.8633
+03:18:36 collected 30 rows into artifacts/research/vgg16_cpu/results.csv
+03:18:44 environment: torch 2.11.0+cpu cuda=False gpu=none python 3.11.9
+03:18:44 config=configs/vgg_cifar10_cpu.yaml seeds=[42] device=cpu dry_run=False
+03:18:44 NOTE: running on CPU. No GPU results are produced by this invocation.
+C:\Users\sharn\OneDrive\Desktop\PROJECTS\Self pruning Network\src\self_pruning_network\research_data.py:29: VisibleDeprecationWarning: dtype(): align should be passed as Python or NumPy boolean but got `align=0`. Did you mean to pass a tuple to create a subarray type? (Deprecated NumPy 2.4)
+  entry = pickle.load(handle, encoding="latin1")
+04:15:03 seed 42 source gated: measured removal damage for 208 units in 3357s
+05:11:46 seed 42 source slimming: measured removal damage for 208 units in 3310s
+05:13:01 environment: torch 2.11.0+cpu cuda=False gpu=none python 3.11.9
+05:13:01 config=configs/vgg_cifar10_cpu.yaml seeds=[42, 123, 2024] device=cpu dry_run=False
+05:13:01 NOTE: running on CPU. No GPU results are produced by this invocation.
+05:13:09 analysis written to artifacts\research\vgg16_cpu\analysis and C:\Users\sharn\OneDrive\Desktop\PROJECTS\Self pruning Network\research\paper\figures\vgg16_cpu
+05:13:12 environment: torch 2.11.0+cpu cuda=False gpu=none python 3.11.9
+05:13:12 config=configs/vgg_cifar10_cpu.yaml seeds=[123] device=cpu dry_run=False
+05:13:12 NOTE: running on CPU. No GPU results are produced by this invocation.
+C:\Users\sharn\OneDrive\Desktop\PROJECTS\Self pruning Network\src\self_pruning_network\research_data.py:29: VisibleDeprecationWarning: dtype(): align should be passed as Python or NumPy boolean but got `align=0`. Did you mean to pass a tuple to create a subarray type? (Deprecated NumPy 2.4)
+  entry = pickle.load(handle, encoding="latin1")
+05:13:14 training source dense seed 123 (20 epochs)
+05:24:07 [dense/s123] epoch 1/20 train_loss=2.3642 val_acc=0.2794 (628.2s)
+05:34:34 [dense/s123] epoch 2/20 train_loss=1.6837 val_acc=0.4008 (610.4s)
+05:45:06 [dense/s123] epoch 3/20 train_loss=1.2837 val_acc=0.5980 (614.7s)
+05:55:43 [dense/s123] epoch 4/20 train_loss=0.9465 val_acc=0.6768 (619.6s)
+06:06:17 [dense/s123] epoch 5/20 train_loss=0.7578 val_acc=0.7060 (616.9s)
+06:16:46 [dense/s123] epoch 6/20 train_loss=0.6519 val_acc=0.7814 (612.4s)
+06:27:15 [dense/s123] epoch 7/20 train_loss=0.5728 val_acc=0.7944 (611.8s)
+06:37:48 [dense/s123] epoch 8/20 train_loss=0.5163 val_acc=0.8058 (616.6s)
+06:48:24 [dense/s123] epoch 9/20 train_loss=0.4648 val_acc=0.8152 (619.0s)
+06:58:55 [dense/s123] epoch 10/20 train_loss=0.4258 val_acc=0.8272 (614.2s)
+07:09:29 [dense/s123] epoch 11/20 train_loss=0.3812 val_acc=0.8328 (617.1s)
+07:20:00 [dense/s123] epoch 12/20 train_loss=0.3382 val_acc=0.8416 (613.9s)
+07:30:33 [dense/s123] epoch 13/20 train_loss=0.3033 val_acc=0.8706 (616.0s)
+07:41:03 [dense/s123] epoch 14/20 train_loss=0.2647 val_acc=0.8746 (613.3s)
+07:51:36 [dense/s123] epoch 15/20 train_loss=0.2271 val_acc=0.8782 (617.0s)
+08:02:09 [dense/s123] epoch 16/20 train_loss=0.1930 val_acc=0.8842 (615.4s)
+08:12:41 [dense/s123] epoch 17/20 train_loss=0.1604 val_acc=0.8930 (614.6s)
+08:23:12 [dense/s123] epoch 18/20 train_loss=0.1355 val_acc=0.8984 (614.5s)
+08:33:31 [dense/s123] epoch 19/20 train_loss=0.1169 val_acc=0.9042 (605.6s)
+08:42:23 [dense/s123] epoch 20/20 train_loss=0.1077 val_acc=0.9048 (520.2s)
+08:43:08 seed 123 dense: val 0.9048 test 0.8995
+08:43:08 training source gated seed 123 (20 epochs)
+08:52:04 [gated/s123] epoch 1/20 train_loss=2.1686 val_acc=0.3436 (523.3s)
+09:00:41 [gated/s123] epoch 2/20 train_loss=1.4849 val_acc=0.5184 (504.8s)
+09:09:19 [gated/s123] epoch 3/20 train_loss=1.0465 val_acc=0.6766 (504.9s)
+09:17:55 [gated/s123] epoch 4/20 train_loss=0.8021 val_acc=0.6860 (502.4s)
+09:26:29 [gated/s123] epoch 5/20 train_loss=0.6735 val_acc=0.7210 (501.2s)
+09:35:08 [gated/s123] epoch 6/20 train_loss=0.5845 val_acc=0.8040 (506.2s)
+09:43:42 [gated/s123] epoch 7/20 train_loss=0.5234 val_acc=0.8000 (501.2s)
+09:52:34 [gated/s123] epoch 8/20 train_loss=0.4743 val_acc=0.8190 (520.5s)
+10:02:52 [gated/s123] epoch 9/20 train_loss=0.4276 val_acc=0.8374 (600.3s)
+10:13:35 [gated/s123] epoch 10/20 train_loss=0.3875 val_acc=0.8484 (625.0s)
+10:24:41 [gated/s123] epoch 11/20 train_loss=0.3468 val_acc=0.8556 (649.4s)
+10:34:39 [gated/s123] epoch 12/20 train_loss=0.3081 val_acc=0.8528 (585.0s)
+10:43:31 [gated/s123] epoch 13/20 train_loss=0.2723 val_acc=0.8638 (518.6s)
+10:52:27 [gated/s123] epoch 14/20 train_loss=0.2333 val_acc=0.8858 (523.6s)
+11:01:10 [gated/s123] epoch 15/20 train_loss=0.2026 val_acc=0.8936 (509.5s)
+11:09:55 [gated/s123] epoch 16/20 train_loss=0.1650 val_acc=0.9002 (511.7s)
+11:19:07 [gated/s123] epoch 17/20 train_loss=0.1351 val_acc=0.9064 (509.5s)
+11:27:46 [gated/s123] epoch 18/20 train_loss=0.1142 val_acc=0.9090 (506.6s)
+11:36:35 [gated/s123] epoch 19/20 train_loss=0.0959 val_acc=0.9096 (515.5s)
+11:45:14 [gated/s123] epoch 20/20 train_loss=0.0877 val_acc=0.9120 (505.4s)
+11:45:52 seed 123 gated: val 0.9120 test 0.9078
+11:45:52 training source slimming seed 123 (20 epochs)
+11:54:13 [slimming/s123] epoch 1/20 train_loss=2.3024 val_acc=0.2506 (488.5s)
+12:02:24 [slimming/s123] epoch 2/20 train_loss=1.7528 val_acc=0.3776 (477.9s)
+12:10:42 [slimming/s123] epoch 3/20 train_loss=1.3936 val_acc=0.5356 (485.3s)
+12:18:56 [slimming/s123] epoch 4/20 train_loss=1.0646 val_acc=0.5954 (480.6s)
+12:27:15 [slimming/s123] epoch 5/20 train_loss=0.8444 val_acc=0.7290 (485.8s)
+12:35:38 [slimming/s123] epoch 6/20 train_loss=0.7117 val_acc=0.7562 (488.6s)
+12:43:58 [slimming/s123] epoch 7/20 train_loss=0.6252 val_acc=0.7854 (487.0s)
+12:52:20 [slimming/s123] epoch 8/20 train_loss=0.5547 val_acc=0.7798 (489.6s)
+13:00:43 [slimming/s123] epoch 9/20 train_loss=0.4986 val_acc=0.8078 (489.0s)
+13:09:00 [slimming/s123] epoch 10/20 train_loss=0.4500 val_acc=0.8000 (485.1s)
+13:17:20 [slimming/s123] epoch 11/20 train_loss=0.4014 val_acc=0.8434 (487.0s)
+13:25:39 [slimming/s123] epoch 12/20 train_loss=0.3623 val_acc=0.8540 (486.4s)
+13:34:00 [slimming/s123] epoch 13/20 train_loss=0.3166 val_acc=0.8598 (488.2s)
+13:42:22 [slimming/s123] epoch 14/20 train_loss=0.2784 val_acc=0.8796 (488.9s)
+13:50:40 [slimming/s123] epoch 15/20 train_loss=0.2392 val_acc=0.8808 (485.4s)
+13:59:02 [slimming/s123] epoch 16/20 train_loss=0.2016 val_acc=0.8896 (488.9s)
+14:07:23 [slimming/s123] epoch 17/20 train_loss=0.1705 val_acc=0.8988 (488.3s)
+14:15:42 [slimming/s123] epoch 18/20 train_loss=0.1440 val_acc=0.9052 (486.3s)
+14:23:58 [slimming/s123] epoch 19/20 train_loss=0.1222 val_acc=0.9064 (483.5s)
+14:32:15 [slimming/s123] epoch 20/20 train_loss=0.1152 val_acc=0.9104 (484.5s)
+14:32:53 seed 123 slimming: val 0.9104 test 0.8994
+14:33:05 environment: torch 2.11.0+cpu cuda=False gpu=none python 3.11.9
+14:33:05 config=configs/vgg_cifar10_cpu.yaml seeds=[123] device=cpu dry_run=False
+14:33:05 NOTE: running on CPU. No GPU results are produced by this invocation.
+C:\Users\sharn\OneDrive\Desktop\PROJECTS\Self pruning Network\src\self_pruning_network\research_data.py:29: VisibleDeprecationWarning: dtype(): align should be passed as Python or NumPy boolean but got `align=0`. Did you mean to pass a tuple to create a subarray type? (Deprecated NumPy 2.4)
+  entry = pickle.load(handle, encoding="latin1")
+14:33:08 seed 123: 30 result rows planned, 30 pending
+14:44:31 [control@dense] epoch 1/3 train_loss=0.1882 val_acc=0.8814 (501.2s)
+14:52:53 [control@dense] epoch 2/3 train_loss=0.1669 val_acc=0.8910 (490.4s)
+15:01:08 [control@dense] epoch 3/3 train_loss=0.1186 val_acc=0.9010 (482.8s)
+15:10:55 [control@gated] epoch 1/3 train_loss=0.1956 val_acc=0.8796 (487.6s)
+15:19:19 [control@gated] epoch 2/3 train_loss=0.1672 val_acc=0.8916 (492.5s)
+15:27:36 [control@gated] epoch 3/3 train_loss=0.1099 val_acc=0.9094 (484.0s)
+15:37:26 [control@slimming] epoch 1/3 train_loss=0.1994 val_acc=0.8796 (489.4s)
+15:48:15 [control@slimming] epoch 2/3 train_loss=0.1767 val_acc=0.8840 (632.9s)
+15:59:07 [control@slimming] epoch 3/3 train_loss=0.1234 val_acc=0.9052 (635.7s)
+16:07:43 [random@gated r=0.2 ft=3] epoch 1/3 train_loss=0.3198 val_acc=0.8402 (416.0s)
+16:15:17 [random@gated r=0.2 ft=3] epoch 2/3 train_loss=0.2416 val_acc=0.8744 (440.6s)
+16:23:01 [random@gated r=0.2 ft=3] epoch 3/3 train_loss=0.1674 val_acc=0.8984 (452.4s)
+16:23:34 seed 123 random@gated                 r=0.20 ft=3: pre 0.2176 -> val 0.8984 test 0.8952
+16:27:11 [random@gated r=0.4 ft=3] epoch 1/3 train_loss=0.5129 val_acc=0.8096 (187.5s)
+16:30:22 [random@gated r=0.4 ft=3] epoch 2/3 train_loss=0.3664 val_acc=0.8546 (184.9s)
+16:33:26 [random@gated r=0.4 ft=3] epoch 3/3 train_loss=0.2557 val_acc=0.8936 (178.7s)
+16:33:42 seed 123 random@gated                 r=0.40 ft=3: pre 0.1018 -> val 0.8936 test 0.8797
+16:35:46 [random@gated r=0.6 ft=3] epoch 1/3 train_loss=0.7572 val_acc=0.7398 (107.4s)
+16:37:23 [random@gated r=0.6 ft=3] epoch 2/3 train_loss=0.5181 val_acc=0.7978 (93.7s)
+16:39:01 [random@gated r=0.6 ft=3] epoch 3/3 train_loss=0.3905 val_acc=0.8592 (94.1s)
+16:39:14 seed 123 random@gated                 r=0.60 ft=3: pre 0.1018 -> val 0.8592 test 0.8583
+16:46:07 [l1@gated r=0.2 ft=3] epoch 1/3 train_loss=0.2685 val_acc=0.8660 (365.9s)
+16:51:55 [l1@gated r=0.2 ft=3] epoch 2/3 train_loss=0.2089 val_acc=0.8868 (339.3s)
+16:57:39 [l1@gated r=0.2 ft=3] epoch 3/3 train_loss=0.1418 val_acc=0.9072 (335.1s)
+16:58:05 seed 123 l1@gated                     r=0.20 ft=3: pre 0.6192 -> val 0.9072 test 0.8982
+17:01:33 [l1@gated r=0.4 ft=3] epoch 1/3 train_loss=0.3888 val_acc=0.8428 (179.3s)
+17:04:40 [l1@gated r=0.4 ft=3] epoch 2/3 train_loss=0.2855 val_acc=0.8618 (181.5s)
+17:07:46 [l1@gated r=0.4 ft=3] epoch 3/3 train_loss=0.2033 val_acc=0.8910 (180.0s)
+17:08:02 seed 123 l1@gated                     r=0.40 ft=3: pre 0.3298 -> val 0.8910 test 0.8907
+17:09:48 [l1@gated r=0.6 ft=3] epoch 1/3 train_loss=0.5913 val_acc=0.7942 (89.1s)
+17:11:21 [l1@gated r=0.6 ft=3] epoch 2/3 train_loss=0.4282 val_acc=0.8260 (90.3s)
+17:12:54 [l1@gated r=0.6 ft=3] epoch 3/3 train_loss=0.3283 val_acc=0.8726 (90.1s)
+17:13:04 seed 123 l1@gated                     r=0.60 ft=3: pre 0.1018 -> val 0.8726 test 0.8641
+17:21:34 [taylor@gated r=0.2 ft=3] epoch 1/3 train_loss=0.2699 val_acc=0.8642 (435.9s)
+17:29:16 [taylor@gated r=0.2 ft=3] epoch 2/3 train_loss=0.2111 val_acc=0.8782 (448.9s)
+17:37:01 [taylor@gated r=0.2 ft=3] epoch 3/3 train_loss=0.1440 val_acc=0.9030 (453.3s)
+17:37:37 seed 123 taylor@gated                 r=0.20 ft=3: pre 0.5532 -> val 0.9030 test 0.9040
+17:42:27 [taylor@gated r=0.4 ft=3] epoch 1/3 train_loss=0.4041 val_acc=0.8400 (252.2s)
+17:46:43 [taylor@gated r=0.4 ft=3] epoch 2/3 train_loss=0.2977 val_acc=0.8844 (248.6s)
+17:50:53 [taylor@gated r=0.4 ft=3] epoch 3/3 train_loss=0.2090 val_acc=0.8972 (243.5s)
+17:51:14 seed 123 taylor@gated                 r=0.40 ft=3: pre 0.2374 -> val 0.8972 test 0.8886
+17:53:43 [taylor@gated r=0.6 ft=3] epoch 1/3 train_loss=0.6249 val_acc=0.7880 (127.3s)
+17:55:57 [taylor@gated r=0.6 ft=3] epoch 2/3 train_loss=0.4371 val_acc=0.8242 (130.3s)
+17:58:11 [taylor@gated r=0.6 ft=3] epoch 3/3 train_loss=0.3323 val_acc=0.8722 (129.3s)
+17:58:24 seed 123 taylor@gated                 r=0.60 ft=3: pre 0.1018 -> val 0.8722 test 0.8686
+18:06:38 [gate_in@gated r=0.2 ft=3] epoch 1/3 train_loss=0.3556 val_acc=0.8240 (435.3s)
+18:14:12 [gate_in@gated r=0.2 ft=3] epoch 2/3 train_loss=0.2521 val_acc=0.8786 (441.6s)
+18:21:45 [gate_in@gated r=0.2 ft=3] epoch 3/3 train_loss=0.1735 val_acc=0.8980 (441.6s)
+18:22:20 seed 123 gate_in@gated                r=0.20 ft=3: pre 0.1106 -> val 0.8980 test 0.8987
+18:27:01 [gate_in@gated r=0.4 ft=3] epoch 1/3 train_loss=0.6185 val_acc=0.8038 (243.7s)
+18:31:19 [gate_in@gated r=0.4 ft=3] epoch 2/3 train_loss=0.3892 val_acc=0.8220 (250.9s)
+18:35:38 [gate_in@gated r=0.4 ft=3] epoch 3/3 train_loss=0.2826 val_acc=0.8716 (251.4s)
+18:36:00 seed 123 gate_in@gated                r=0.40 ft=3: pre 0.1018 -> val 0.8716 test 0.8712
+18:38:40 [gate_in@gated r=0.6 ft=3] epoch 1/3 train_loss=1.0110 val_acc=0.7546 (137.9s)
+18:40:54 [gate_in@gated r=0.6 ft=3] epoch 2/3 train_loss=0.5809 val_acc=0.7916 (130.5s)
+18:43:13 [gate_in@gated r=0.6 ft=3] epoch 3/3 train_loss=0.4379 val_acc=0.8442 (134.8s)
+18:43:26 seed 123 gate_in@gated                r=0.60 ft=3: pre 0.1018 -> val 0.8442 test 0.8401
+18:51:42 [gate_out@gated r=0.2 ft=3] epoch 1/3 train_loss=0.2837 val_acc=0.8614 (436.9s)
+18:59:15 [gate_out@gated r=0.2 ft=3] epoch 2/3 train_loss=0.2193 val_acc=0.8774 (440.8s)
+19:06:42 [gate_out@gated r=0.2 ft=3] epoch 3/3 train_loss=0.1507 val_acc=0.9034 (436.0s)
+19:07:18 seed 123 gate_out@gated               r=0.20 ft=3: pre 0.5782 -> val 0.9034 test 0.9016
+19:12:09 [gate_out@gated r=0.4 ft=3] epoch 1/3 train_loss=0.4222 val_acc=0.8348 (253.0s)
+19:16:32 [gate_out@gated r=0.4 ft=3] epoch 2/3 train_loss=0.3081 val_acc=0.8678 (255.6s)
+19:20:55 [gate_out@gated r=0.4 ft=3] epoch 3/3 train_loss=0.2206 val_acc=0.8872 (256.2s)
+19:21:16 seed 123 gate_out@gated               r=0.40 ft=3: pre 0.1146 -> val 0.8872 test 0.8868
+19:23:49 [gate_out@gated r=0.6 ft=3] epoch 1/3 train_loss=0.6255 val_acc=0.7998 (130.2s)
+19:26:05 [gate_out@gated r=0.6 ft=3] epoch 2/3 train_loss=0.4521 val_acc=0.8332 (132.4s)
+19:28:19 [gate_out@gated r=0.6 ft=3] epoch 3/3 train_loss=0.3420 val_acc=0.8638 (129.2s)
+19:28:31 seed 123 gate_out@gated               r=0.60 ft=3: pre 0.1018 -> val 0.8638 test 0.8635
+19:36:46 [gate_combined@gated r=0.2 ft=3] epoch 1/3 train_loss=0.2858 val_acc=0.8556 (434.4s)
+19:44:26 [gate_combined@gated r=0.2 ft=3] epoch 2/3 train_loss=0.2190 val_acc=0.8792 (448.1s)
+19:52:04 [gate_combined@gated r=0.2 ft=3] epoch 3/3 train_loss=0.1503 val_acc=0.9056 (446.6s)
+19:52:40 seed 123 gate_combined@gated          r=0.20 ft=3: pre 0.5846 -> val 0.9056 test 0.9026
+19:57:33 [gate_combined@gated r=0.4 ft=3] epoch 1/3 train_loss=0.4229 val_acc=0.8570 (254.9s)
+20:01:52 [gate_combined@gated r=0.4 ft=3] epoch 2/3 train_loss=0.3085 val_acc=0.8510 (252.2s)
+20:06:13 [gate_combined@gated r=0.4 ft=3] epoch 3/3 train_loss=0.2180 val_acc=0.8924 (252.8s)
+20:06:35 seed 123 gate_combined@gated          r=0.40 ft=3: pre 0.1102 -> val 0.8924 test 0.8923
+20:09:06 [gate_combined@gated r=0.6 ft=3] epoch 1/3 train_loss=0.6306 val_acc=0.7944 (129.2s)
+20:11:23 [gate_combined@gated r=0.6 ft=3] epoch 2/3 train_loss=0.4493 val_acc=0.8088 (132.1s)
+20:13:37 [gate_combined@gated r=0.6 ft=3] epoch 3/3 train_loss=0.3441 val_acc=0.8682 (130.6s)
+20:13:50 seed 123 gate_combined@gated          r=0.60 ft=3: pre 0.1018 -> val 0.8682 test 0.8617
+20:22:11 [bn_gamma@gated r=0.2 ft=3] epoch 1/3 train_loss=0.2781 val_acc=0.8540 (440.1s)
+20:29:44 [bn_gamma@gated r=0.2 ft=3] epoch 2/3 train_loss=0.2141 val_acc=0.8912 (441.5s)
+20:37:18 [bn_gamma@gated r=0.2 ft=3] epoch 3/3 train_loss=0.1424 val_acc=0.9076 (443.0s)
+20:37:54 seed 123 bn_gamma@gated               r=0.20 ft=3: pre 0.5952 -> val 0.9076 test 0.9002
+20:42:40 [bn_gamma@gated r=0.4 ft=3] epoch 1/3 train_loss=0.4161 val_acc=0.8418 (249.1s)
+20:47:03 [bn_gamma@gated r=0.4 ft=3] epoch 2/3 train_loss=0.3015 val_acc=0.8708 (255.8s)
+20:51:22 [bn_gamma@gated r=0.4 ft=3] epoch 3/3 train_loss=0.2191 val_acc=0.8974 (251.1s)
+20:51:44 seed 123 bn_gamma@gated               r=0.40 ft=3: pre 0.1270 -> val 0.8974 test 0.8903
+20:54:12 [bn_gamma@gated r=0.6 ft=3] epoch 1/3 train_loss=0.6362 val_acc=0.7980 (125.8s)
+20:56:22 [bn_gamma@gated r=0.6 ft=3] epoch 2/3 train_loss=0.4507 val_acc=0.8130 (126.0s)
+20:58:31 [bn_gamma@gated r=0.6 ft=3] epoch 3/3 train_loss=0.3384 val_acc=0.8738 (125.2s)
+20:58:44 seed 123 bn_gamma@gated               r=0.60 ft=3: pre 0.1018 -> val 0.8738 test 0.8644
+21:06:57 [l1@dense r=0.2 ft=3] epoch 1/3 train_loss=0.2558 val_acc=0.8582 (433.6s)
+21:14:27 [l1@dense r=0.2 ft=3] epoch 2/3 train_loss=0.2019 val_acc=0.8674 (439.1s)
+21:21:59 [l1@dense r=0.2 ft=3] epoch 3/3 train_loss=0.1436 val_acc=0.8996 (439.9s)
+21:22:34 seed 123 l1@dense                     r=0.20 ft=3: pre 0.6640 -> val 0.8996 test 0.8955
+21:27:15 [l1@dense r=0.4 ft=3] epoch 1/3 train_loss=0.3697 val_acc=0.8446 (242.6s)
+21:31:29 [l1@dense r=0.4 ft=3] epoch 2/3 train_loss=0.2779 val_acc=0.8706 (247.0s)
+21:35:44 [l1@dense r=0.4 ft=3] epoch 3/3 train_loss=0.2076 val_acc=0.8840 (247.5s)
+21:36:06 seed 123 l1@dense                     r=0.40 ft=3: pre 0.3366 -> val 0.8840 test 0.8873
+21:38:33 [l1@dense r=0.6 ft=3] epoch 1/3 train_loss=0.5640 val_acc=0.8250 (125.4s)
+21:40:46 [l1@dense r=0.6 ft=3] epoch 2/3 train_loss=0.4111 val_acc=0.8266 (128.5s)
+21:43:03 [l1@dense r=0.6 ft=3] epoch 3/3 train_loss=0.3227 val_acc=0.8710 (132.8s)
+21:43:15 seed 123 l1@dense                     r=0.60 ft=3: pre 0.1018 -> val 0.8710 test 0.8651
+21:51:27 [slimming@slimming r=0.2 ft=3] epoch 1/3 train_loss=0.2633 val_acc=0.8724 (432.2s)
+21:59:01 [slimming@slimming r=0.2 ft=3] epoch 2/3 train_loss=0.2138 val_acc=0.8812 (442.4s)
+22:06:29 [slimming@slimming r=0.2 ft=3] epoch 3/3 train_loss=0.1503 val_acc=0.9010 (435.6s)
+22:07:04 seed 123 slimming@slimming            r=0.20 ft=3: pre 0.6788 -> val 0.9010 test 0.8957
+22:10:49 [slimming@slimming r=0.4 ft=3] epoch 1/3 train_loss=0.3901 val_acc=0.8408 (191.1s)
+22:14:00 [slimming@slimming r=0.4 ft=3] epoch 2/3 train_loss=0.2907 val_acc=0.8678 (185.6s)
+22:17:07 [slimming@slimming r=0.4 ft=3] epoch 3/3 train_loss=0.2109 val_acc=0.8888 (181.9s)
+22:17:23 seed 123 slimming@slimming            r=0.40 ft=3: pre 0.3728 -> val 0.8888 test 0.8855
+22:19:07 [slimming@slimming r=0.6 ft=3] epoch 1/3 train_loss=0.5851 val_acc=0.7854 (87.2s)
+22:20:41 [slimming@slimming r=0.6 ft=3] epoch 2/3 train_loss=0.4274 val_acc=0.8348 (90.7s)
+22:22:16 [slimming@slimming r=0.6 ft=3] epoch 3/3 train_loss=0.3333 val_acc=0.8720 (91.6s)
+22:22:25 seed 123 slimming@slimming            r=0.60 ft=3: pre 0.1870 -> val 0.8720 test 0.8626
+22:22:31 collected 60 rows into artifacts/research/vgg16_cpu/results.csv
+22:22:42 environment: torch 2.11.0+cpu cuda=False gpu=none python 3.11.9
+22:22:42 config=configs/vgg_cifar10_cpu.yaml seeds=[123] device=cpu dry_run=False
+22:22:42 NOTE: running on CPU. No GPU results are produced by this invocation.
+C:\Users\sharn\OneDrive\Desktop\PROJECTS\Self pruning Network\src\self_pruning_network\research_data.py:29: VisibleDeprecationWarning: dtype(): align should be passed as Python or NumPy boolean but got `align=0`. Did you mean to pass a tuple to create a subarray type? (Deprecated NumPy 2.4)
+  entry = pickle.load(handle, encoding="latin1")
+23:16:11 seed 123 source gated: measured removal damage for 208 units in 3189s
+00:13:34 seed 123 source slimming: measured removal damage for 208 units in 3348s
+00:14:49 environment: torch 2.11.0+cpu cuda=False gpu=none python 3.11.9
+00:14:49 config=configs/vgg_cifar10_cpu.yaml seeds=[42, 123, 2024] device=cpu dry_run=False
+00:14:49 NOTE: running on CPU. No GPU results are produced by this invocation.
+00:14:57 analysis written to artifacts\research\vgg16_cpu\analysis and C:\Users\sharn\OneDrive\Desktop\PROJECTS\Self pruning Network\research\paper\figures\vgg16_cpu
+00:15:00 environment: torch 2.11.0+cpu cuda=False gpu=none python 3.11.9
+00:15:00 config=configs/vgg_cifar10_cpu.yaml seeds=[2024] device=cpu dry_run=False
+00:15:00 NOTE: running on CPU. No GPU results are produced by this invocation.
+C:\Users\sharn\OneDrive\Desktop\PROJECTS\Self pruning Network\src\self_pruning_network\research_data.py:29: VisibleDeprecationWarning: dtype(): align should be passed as Python or NumPy boolean but got `align=0`. Did you mean to pass a tuple to create a subarray type? (Deprecated NumPy 2.4)
+  entry = pickle.load(handle, encoding="latin1")
+00:15:03 training source dense seed 2024 (20 epochs)
+00:25:57 [dense/s2024] epoch 1/20 train_loss=2.3723 val_acc=0.1944 (630.7s)
+00:36:20 [dense/s2024] epoch 2/20 train_loss=1.8415 val_acc=0.3192 (606.4s)
+00:46:43 [dense/s2024] epoch 3/20 train_loss=1.5500 val_acc=0.4484 (606.4s)
+00:57:10 [dense/s2024] epoch 4/20 train_loss=1.2730 val_acc=0.5762 (611.1s)
+01:07:43 [dense/s2024] epoch 5/20 train_loss=1.0307 val_acc=0.6856 (615.4s)
+01:18:13 [dense/s2024] epoch 6/20 train_loss=0.8446 val_acc=0.6988 (612.0s)
+01:28:39 [dense/s2024] epoch 7/20 train_loss=0.7219 val_acc=0.7054 (610.1s)
+01:39:05 [dense/s2024] epoch 8/20 train_loss=0.6325 val_acc=0.7638 (609.0s)
+01:49:34 [dense/s2024] epoch 9/20 train_loss=0.5673 val_acc=0.7662 (611.5s)
+02:00:12 [dense/s2024] epoch 10/20 train_loss=0.5106 val_acc=0.8258 (622.0s)
+02:10:46 [dense/s2024] epoch 11/20 train_loss=0.4611 val_acc=0.8228 (616.9s)
+02:21:20 [dense/s2024] epoch 12/20 train_loss=0.4125 val_acc=0.8520 (616.1s)
+02:31:56 [dense/s2024] epoch 13/20 train_loss=0.3669 val_acc=0.8454 (619.6s)
+02:42:27 [dense/s2024] epoch 14/20 train_loss=0.3250 val_acc=0.8456 (613.6s)
+02:53:01 [dense/s2024] epoch 15/20 train_loss=0.2860 val_acc=0.8748 (616.1s)
+03:03:33 [dense/s2024] epoch 16/20 train_loss=0.2454 val_acc=0.8786 (615.7s)
+03:14:07 [dense/s2024] epoch 17/20 train_loss=0.2120 val_acc=0.8892 (616.3s)
+03:24:41 [dense/s2024] epoch 18/20 train_loss=0.1815 val_acc=0.8956 (617.9s)
+03:35:23 [dense/s2024] epoch 19/20 train_loss=0.1629 val_acc=0.9018 (624.4s)
+03:45:57 [dense/s2024] epoch 20/20 train_loss=0.1526 val_acc=0.9012 (617.5s)
+03:46:52 seed 2024 dense: val 0.9018 test 0.8912
+03:46:52 training source gated seed 2024 (20 epochs)
+03:57:43 [gated/s2024] epoch 1/20 train_loss=2.2785 val_acc=0.2692 (633.9s)
+04:08:39 [gated/s2024] epoch 2/20 train_loss=1.7161 val_acc=0.3748 (639.4s)
+04:19:32 [gated/s2024] epoch 3/20 train_loss=1.3864 val_acc=0.5764 (636.5s)
+04:30:30 [gated/s2024] epoch 4/20 train_loss=1.0599 val_acc=0.6330 (640.9s)
+04:41:23 [gated/s2024] epoch 5/20 train_loss=0.8441 val_acc=0.7146 (636.3s)
+04:52:17 [gated/s2024] epoch 6/20 train_loss=0.7065 val_acc=0.7386 (636.3s)
+05:03:20 [gated/s2024] epoch 7/20 train_loss=0.6225 val_acc=0.8086 (646.3s)
+05:14:17 [gated/s2024] epoch 8/20 train_loss=0.5521 val_acc=0.7860 (639.4s)
+05:25:13 [gated/s2024] epoch 9/20 train_loss=0.4958 val_acc=0.8032 (640.0s)
+05:36:15 [gated/s2024] epoch 10/20 train_loss=0.4461 val_acc=0.8312 (644.9s)
+05:47:19 [gated/s2024] epoch 11/20 train_loss=0.4034 val_acc=0.8228 (647.4s)
+05:58:15 [gated/s2024] epoch 12/20 train_loss=0.3612 val_acc=0.8596 (639.0s)
+06:09:10 [gated/s2024] epoch 13/20 train_loss=0.3187 val_acc=0.8544 (638.2s)
+06:20:02 [gated/s2024] epoch 14/20 train_loss=0.2782 val_acc=0.8642 (634.6s)
+06:30:57 [gated/s2024] epoch 15/20 train_loss=0.2407 val_acc=0.8832 (638.0s)
+06:41:52 [gated/s2024] epoch 16/20 train_loss=0.2033 val_acc=0.8808 (638.5s)
+06:52:47 [gated/s2024] epoch 17/20 train_loss=0.1724 val_acc=0.8978 (637.4s)
+07:03:36 [gated/s2024] epoch 18/20 train_loss=0.1462 val_acc=0.9016 (631.6s)
+07:14:25 [gated/s2024] epoch 19/20 train_loss=0.1277 val_acc=0.9046 (632.1s)
+07:25:13 [gated/s2024] epoch 20/20 train_loss=0.1173 val_acc=0.9066 (631.1s)
+07:26:01 seed 2024 gated: val 0.9066 test 0.9007
+07:26:01 training source slimming seed 2024 (20 epochs)
+07:36:32 [slimming/s2024] epoch 1/20 train_loss=2.2647 val_acc=0.2854 (614.5s)
+07:46:59 [slimming/s2024] epoch 2/20 train_loss=1.7487 val_acc=0.3682 (610.1s)
+07:57:36 [slimming/s2024] epoch 3/20 train_loss=1.4453 val_acc=0.5220 (620.2s)
+08:08:20 [slimming/s2024] epoch 4/20 train_loss=1.1414 val_acc=0.5990 (627.3s)
+08:18:51 [slimming/s2024] epoch 5/20 train_loss=0.9207 val_acc=0.6892 (614.6s)
+08:29:26 [slimming/s2024] epoch 6/20 train_loss=0.7576 val_acc=0.7374 (618.3s)
+08:39:57 [slimming/s2024] epoch 7/20 train_loss=0.6596 val_acc=0.7552 (614.4s)
+08:50:30 [slimming/s2024] epoch 8/20 train_loss=0.5785 val_acc=0.7816 (616.4s)
+09:01:10 [slimming/s2024] epoch 9/20 train_loss=0.5192 val_acc=0.7650 (622.9s)
+09:11:43 [slimming/s2024] epoch 10/20 train_loss=0.4661 val_acc=0.8316 (616.4s)
+09:20:58 [slimming/s2024] epoch 11/20 train_loss=0.4180 val_acc=0.8190 (541.8s)
+09:29:21 [slimming/s2024] epoch 12/20 train_loss=0.3731 val_acc=0.8532 (489.3s)
+09:37:41 [slimming/s2024] epoch 13/20 train_loss=0.3296 val_acc=0.8640 (488.3s)
+09:45:58 [slimming/s2024] epoch 14/20 train_loss=0.2894 val_acc=0.8694 (484.7s)
+09:54:16 [slimming/s2024] epoch 15/20 train_loss=0.2499 val_acc=0.8724 (485.1s)
+10:02:35 [slimming/s2024] epoch 16/20 train_loss=0.2145 val_acc=0.8854 (486.4s)
+10:10:55 [slimming/s2024] epoch 17/20 train_loss=0.1765 val_acc=0.8942 (487.5s)
+10:19:21 [slimming/s2024] epoch 18/20 train_loss=0.1525 val_acc=0.9034 (494.4s)
+10:27:46 [slimming/s2024] epoch 19/20 train_loss=0.1317 val_acc=0.9046 (493.0s)
+10:36:06 [slimming/s2024] epoch 20/20 train_loss=0.1217 val_acc=0.9078 (486.6s)
+10:36:43 seed 2024 slimming: val 0.9078 test 0.8963
+10:36:58 environment: torch 2.11.0+cpu cuda=False gpu=none python 3.11.9
+10:36:58 config=configs/vgg_cifar10_cpu.yaml seeds=[2024] device=cpu dry_run=False
+10:36:58 NOTE: running on CPU. No GPU results are produced by this invocation.
+C:\Users\sharn\OneDrive\Desktop\PROJECTS\Self pruning Network\src\self_pruning_network\research_data.py:29: VisibleDeprecationWarning: dtype(): align should be passed as Python or NumPy boolean but got `align=0`. Did you mean to pass a tuple to create a subarray type? (Deprecated NumPy 2.4)
+  entry = pickle.load(handle, encoding="latin1")
+10:37:01 seed 2024: 30 result rows planned, 30 pending
+10:50:02 [control@dense] epoch 1/3 train_loss=0.2448 val_acc=0.8548 (600.6s)
+10:58:24 [control@dense] epoch 2/3 train_loss=0.2160 val_acc=0.8880 (489.2s)
+11:06:40 [control@dense] epoch 3/3 train_loss=0.1568 val_acc=0.8982 (484.0s)
+11:16:24 [control@gated] epoch 1/3 train_loss=0.2328 val_acc=0.8620 (486.0s)
+11:24:40 [control@gated] epoch 2/3 train_loss=0.1955 val_acc=0.8860 (484.3s)
+11:33:04 [control@gated] epoch 3/3 train_loss=0.1347 val_acc=0.9064 (491.6s)
+11:42:48 [control@slimming] epoch 1/3 train_loss=0.2126 val_acc=0.8842 (485.2s)
+11:51:01 [control@slimming] epoch 2/3 train_loss=0.1825 val_acc=0.8930 (481.2s)
+11:59:14 [control@slimming] epoch 3/3 train_loss=0.1288 val_acc=0.9052 (480.6s)
+12:06:09 [random@gated r=0.2 ft=3] epoch 1/3 train_loss=0.3675 val_acc=0.8482 (333.7s)
+12:11:59 [random@gated r=0.2 ft=3] epoch 2/3 train_loss=0.2877 val_acc=0.8602 (341.3s)
+12:17:56 [random@gated r=0.2 ft=3] epoch 3/3 train_loss=0.2027 val_acc=0.8980 (347.9s)
+12:18:22 seed 2024 random@gated                 r=0.20 ft=3: pre 0.1174 -> val 0.8980 test 0.8886
+12:22:00 [random@gated r=0.4 ft=3] epoch 1/3 train_loss=0.5334 val_acc=0.7932 (189.0s)
+12:25:17 [random@gated r=0.4 ft=3] epoch 2/3 train_loss=0.3947 val_acc=0.8204 (192.1s)
+12:28:24 [random@gated r=0.4 ft=3] epoch 3/3 train_loss=0.2862 val_acc=0.8702 (181.4s)
+12:28:41 seed 2024 random@gated                 r=0.40 ft=3: pre 0.1018 -> val 0.8702 test 0.8712
+12:30:30 [random@gated r=0.6 ft=3] epoch 1/3 train_loss=0.8425 val_acc=0.7540 (93.4s)
+12:32:06 [random@gated r=0.6 ft=3] epoch 2/3 train_loss=0.5671 val_acc=0.7942 (92.9s)
+12:33:43 [random@gated r=0.6 ft=3] epoch 3/3 train_loss=0.4280 val_acc=0.8380 (93.7s)
+12:33:53 seed 2024 random@gated                 r=0.60 ft=3: pre 0.1018 -> val 0.8380 test 0.8437
+12:40:11 [l1@gated r=0.2 ft=3] epoch 1/3 train_loss=0.2865 val_acc=0.8692 (334.0s)
+12:45:59 [l1@gated r=0.2 ft=3] epoch 2/3 train_loss=0.2304 val_acc=0.8800 (339.7s)
+12:51:42 [l1@gated r=0.2 ft=3] epoch 3/3 train_loss=0.1643 val_acc=0.8966 (333.8s)
+12:52:08 seed 2024 l1@gated                     r=0.20 ft=3: pre 0.6750 -> val 0.8966 test 0.8943
+12:55:50 [l1@gated r=0.4 ft=3] epoch 1/3 train_loss=0.3831 val_acc=0.8482 (193.6s)
+12:59:08 [l1@gated r=0.4 ft=3] epoch 2/3 train_loss=0.3002 val_acc=0.8622 (193.0s)
+13:02:29 [l1@gated r=0.4 ft=3] epoch 3/3 train_loss=0.2200 val_acc=0.8886 (195.5s)
+13:02:46 seed 2024 l1@gated                     r=0.40 ft=3: pre 0.2804 -> val 0.8886 test 0.8865
+13:04:33 [l1@gated r=0.6 ft=3] epoch 1/3 train_loss=0.5588 val_acc=0.8140 (90.6s)
+13:06:13 [l1@gated r=0.6 ft=3] epoch 2/3 train_loss=0.4192 val_acc=0.8410 (96.7s)
+13:07:49 [l1@gated r=0.6 ft=3] epoch 3/3 train_loss=0.3145 val_acc=0.8706 (93.3s)
+13:07:59 seed 2024 l1@gated                     r=0.60 ft=3: pre 0.1018 -> val 0.8706 test 0.8728
+13:14:56 [taylor@gated r=0.2 ft=3] epoch 1/3 train_loss=0.2900 val_acc=0.8656 (351.9s)
+13:20:57 [taylor@gated r=0.2 ft=3] epoch 2/3 train_loss=0.2300 val_acc=0.8782 (352.7s)
+13:28:43 [taylor@gated r=0.2 ft=3] epoch 3/3 train_loss=0.1622 val_acc=0.9004 (453.8s)
+13:29:19 seed 2024 taylor@gated                 r=0.20 ft=3: pre 0.5048 -> val 0.9004 test 0.8970
+13:34:26 [taylor@gated r=0.4 ft=3] epoch 1/3 train_loss=0.3929 val_acc=0.8440 (267.2s)
+13:39:04 [taylor@gated r=0.4 ft=3] epoch 2/3 train_loss=0.3024 val_acc=0.8582 (271.6s)
+13:43:24 [taylor@gated r=0.4 ft=3] epoch 3/3 train_loss=0.2160 val_acc=0.8890 (252.2s)
+13:43:46 seed 2024 taylor@gated                 r=0.40 ft=3: pre 0.2548 -> val 0.8890 test 0.8888
+13:46:15 [taylor@gated r=0.6 ft=3] epoch 1/3 train_loss=0.5960 val_acc=0.8130 (127.2s)
+13:48:22 [taylor@gated r=0.6 ft=3] epoch 2/3 train_loss=0.4316 val_acc=0.8334 (123.3s)
+13:50:32 [taylor@gated r=0.6 ft=3] epoch 3/3 train_loss=0.3274 val_acc=0.8642 (126.0s)
+13:50:45 seed 2024 taylor@gated                 r=0.60 ft=3: pre 0.1018 -> val 0.8642 test 0.8686
+13:58:58 [gate_in@gated r=0.2 ft=3] epoch 1/3 train_loss=0.4009 val_acc=0.8526 (434.8s)
+14:06:30 [gate_in@gated r=0.2 ft=3] epoch 2/3 train_loss=0.2825 val_acc=0.8614 (440.5s)
+14:14:17 [gate_in@gated r=0.2 ft=3] epoch 3/3 train_loss=0.1980 val_acc=0.8952 (454.2s)
+14:14:52 seed 2024 gate_in@gated                r=0.20 ft=3: pre 0.1020 -> val 0.8952 test 0.8945
+14:19:57 [gate_in@gated r=0.4 ft=3] epoch 1/3 train_loss=0.6185 val_acc=0.8104 (267.5s)
+14:24:32 [gate_in@gated r=0.4 ft=3] epoch 2/3 train_loss=0.4027 val_acc=0.8326 (266.8s)
+14:28:50 [gate_in@gated r=0.4 ft=3] epoch 3/3 train_loss=0.2907 val_acc=0.8776 (250.9s)
+14:29:12 seed 2024 gate_in@gated                r=0.40 ft=3: pre 0.1018 -> val 0.8776 test 0.8741
+14:31:43 [gate_in@gated r=0.6 ft=3] epoch 1/3 train_loss=0.9477 val_acc=0.7162 (129.3s)
+14:33:53 [gate_in@gated r=0.6 ft=3] epoch 2/3 train_loss=0.5762 val_acc=0.7958 (125.5s)
+14:36:07 [gate_in@gated r=0.6 ft=3] epoch 3/3 train_loss=0.4366 val_acc=0.8364 (130.2s)
+14:36:20 seed 2024 gate_in@gated                r=0.60 ft=3: pre 0.1018 -> val 0.8364 test 0.8416
+14:44:43 [gate_out@gated r=0.2 ft=3] epoch 1/3 train_loss=0.2901 val_acc=0.8668 (442.6s)
+14:52:17 [gate_out@gated r=0.2 ft=3] epoch 2/3 train_loss=0.2370 val_acc=0.8796 (442.3s)
+14:59:53 [gate_out@gated r=0.2 ft=3] epoch 3/3 train_loss=0.1648 val_acc=0.9008 (444.7s)
+15:00:29 seed 2024 gate_out@gated               r=0.20 ft=3: pre 0.6512 -> val 0.9008 test 0.8919
+15:05:22 [gate_out@gated r=0.4 ft=3] epoch 1/3 train_loss=0.4005 val_acc=0.8536 (255.6s)
+15:10:05 [gate_out@gated r=0.4 ft=3] epoch 2/3 train_loss=0.3093 val_acc=0.8598 (274.9s)
+15:14:55 [gate_out@gated r=0.4 ft=3] epoch 3/3 train_loss=0.2255 val_acc=0.8856 (282.0s)
+15:15:19 seed 2024 gate_out@gated               r=0.40 ft=3: pre 0.2542 -> val 0.8856 test 0.8839
+15:17:59 [gate_out@gated r=0.6 ft=3] epoch 1/3 train_loss=0.5882 val_acc=0.8094 (137.6s)
+15:20:20 [gate_out@gated r=0.6 ft=3] epoch 2/3 train_loss=0.4425 val_acc=0.8340 (136.6s)
+15:22:40 [gate_out@gated r=0.6 ft=3] epoch 3/3 train_loss=0.3373 val_acc=0.8690 (135.0s)
+15:22:53 seed 2024 gate_out@gated               r=0.60 ft=3: pre 0.1018 -> val 0.8690 test 0.8676
+15:31:12 [gate_combined@gated r=0.2 ft=3] epoch 1/3 train_loss=0.3017 val_acc=0.8720 (440.3s)
+15:38:18 [gate_combined@gated r=0.2 ft=3] epoch 2/3 train_loss=0.2384 val_acc=0.8840 (418.1s)
+15:44:26 [gate_combined@gated r=0.2 ft=3] epoch 3/3 train_loss=0.1695 val_acc=0.9004 (357.2s)
+15:45:00 seed 2024 gate_combined@gated          r=0.20 ft=3: pre 0.6260 -> val 0.9004 test 0.8981
+15:49:20 [gate_combined@gated r=0.4 ft=3] epoch 1/3 train_loss=0.4096 val_acc=0.8486 (221.3s)
+15:53:44 [gate_combined@gated r=0.4 ft=3] epoch 2/3 train_loss=0.3167 val_acc=0.8572 (256.4s)
+15:57:41 [gate_combined@gated r=0.4 ft=3] epoch 3/3 train_loss=0.2289 val_acc=0.8866 (231.1s)
+15:57:58 seed 2024 gate_combined@gated          r=0.40 ft=3: pre 0.1910 -> val 0.8866 test 0.8854
+15:59:52 [gate_combined@gated r=0.6 ft=3] epoch 1/3 train_loss=0.5979 val_acc=0.8020 (95.9s)
+16:01:54 [gate_combined@gated r=0.6 ft=3] epoch 2/3 train_loss=0.4439 val_acc=0.8262 (117.1s)
+16:04:11 [gate_combined@gated r=0.6 ft=3] epoch 3/3 train_loss=0.3424 val_acc=0.8574 (132.4s)
+16:04:24 seed 2024 gate_combined@gated          r=0.60 ft=3: pre 0.1018 -> val 0.8574 test 0.8637
+16:12:44 [bn_gamma@gated r=0.2 ft=3] epoch 1/3 train_loss=0.2948 val_acc=0.8648 (440.8s)
+16:20:17 [bn_gamma@gated r=0.2 ft=3] epoch 2/3 train_loss=0.2325 val_acc=0.8818 (440.7s)
+16:27:54 [bn_gamma@gated r=0.2 ft=3] epoch 3/3 train_loss=0.1668 val_acc=0.8996 (445.1s)
+16:28:30 seed 2024 bn_gamma@gated               r=0.20 ft=3: pre 0.6630 -> val 0.8996 test 0.8951
+16:33:20 [bn_gamma@gated r=0.4 ft=3] epoch 1/3 train_loss=0.4008 val_acc=0.8382 (252.2s)
+16:37:43 [bn_gamma@gated r=0.4 ft=3] epoch 2/3 train_loss=0.3059 val_acc=0.8690 (255.1s)
+16:42:07 [bn_gamma@gated r=0.4 ft=3] epoch 3/3 train_loss=0.2193 val_acc=0.8888 (256.7s)
+16:42:29 seed 2024 bn_gamma@gated               r=0.40 ft=3: pre 0.2444 -> val 0.8888 test 0.8858
+16:45:03 [bn_gamma@gated r=0.6 ft=3] epoch 1/3 train_loss=0.5927 val_acc=0.7850 (131.2s)
+16:47:19 [bn_gamma@gated r=0.6 ft=3] epoch 2/3 train_loss=0.4323 val_acc=0.8258 (131.6s)
+16:49:33 [bn_gamma@gated r=0.6 ft=3] epoch 3/3 train_loss=0.3317 val_acc=0.8672 (129.4s)
+16:49:46 seed 2024 bn_gamma@gated               r=0.60 ft=3: pre 0.1040 -> val 0.8672 test 0.8685
+16:58:10 [l1@dense r=0.2 ft=3] epoch 1/3 train_loss=0.2825 val_acc=0.8754 (446.6s)
+17:04:30 [l1@dense r=0.2 ft=3] epoch 2/3 train_loss=0.2384 val_acc=0.8780 (370.7s)
+17:10:13 [l1@dense r=0.2 ft=3] epoch 3/3 train_loss=0.1794 val_acc=0.8936 (334.3s)
+17:10:40 seed 2024 l1@dense                     r=0.20 ft=3: pre 0.7228 -> val 0.8936 test 0.8884
+17:14:10 [l1@dense r=0.4 ft=3] epoch 1/3 train_loss=0.3738 val_acc=0.8528 (181.6s)
+17:17:18 [l1@dense r=0.4 ft=3] epoch 2/3 train_loss=0.3022 val_acc=0.8668 (182.2s)
+17:20:27 [l1@dense r=0.4 ft=3] epoch 3/3 train_loss=0.2292 val_acc=0.8846 (183.2s)
+17:20:43 seed 2024 l1@dense                     r=0.40 ft=3: pre 0.3446 -> val 0.8846 test 0.8836
+17:22:30 [l1@dense r=0.6 ft=3] epoch 1/3 train_loss=0.5438 val_acc=0.8264 (89.7s)
+17:24:05 [l1@dense r=0.6 ft=3] epoch 2/3 train_loss=0.4167 val_acc=0.8406 (91.7s)
+17:25:40 [l1@dense r=0.6 ft=3] epoch 3/3 train_loss=0.3317 val_acc=0.8668 (92.5s)
+17:25:50 seed 2024 l1@dense                     r=0.60 ft=3: pre 0.1088 -> val 0.8668 test 0.8649
+17:32:10 [slimming@slimming r=0.2 ft=3] epoch 1/3 train_loss=0.2677 val_acc=0.8796 (335.8s)
+17:37:54 [slimming@slimming r=0.2 ft=3] epoch 2/3 train_loss=0.2138 val_acc=0.8844 (335.3s)
+17:43:37 [slimming@slimming r=0.2 ft=3] epoch 3/3 train_loss=0.1544 val_acc=0.9034 (333.9s)
+17:44:03 seed 2024 slimming@slimming            r=0.20 ft=3: pre 0.7118 -> val 0.9034 test 0.8922
+17:47:33 [slimming@slimming r=0.4 ft=3] epoch 1/3 train_loss=0.3855 val_acc=0.8560 (181.0s)
+17:50:41 [slimming@slimming r=0.4 ft=3] epoch 2/3 train_loss=0.2951 val_acc=0.8760 (183.3s)
+17:53:53 [slimming@slimming r=0.4 ft=3] epoch 3/3 train_loss=0.2152 val_acc=0.8916 (185.9s)
+17:54:09 seed 2024 slimming@slimming            r=0.40 ft=3: pre 0.3254 -> val 0.8916 test 0.8851
+17:56:00 [slimming@slimming r=0.6 ft=3] epoch 1/3 train_loss=0.5780 val_acc=0.8060 (93.9s)
+17:57:37 [slimming@slimming r=0.6 ft=3] epoch 2/3 train_loss=0.4203 val_acc=0.8526 (94.3s)
+17:59:12 [slimming@slimming r=0.6 ft=3] epoch 3/3 train_loss=0.3260 val_acc=0.8728 (92.0s)
+17:59:22 seed 2024 slimming@slimming            r=0.60 ft=3: pre 0.1050 -> val 0.8728 test 0.8668
+17:59:27 collected 90 rows into artifacts/research/vgg16_cpu/results.csv
+17:59:39 environment: torch 2.11.0+cpu cuda=False gpu=none python 3.11.9
+17:59:39 config=configs/vgg_cifar10_cpu.yaml seeds=[2024] device=cpu dry_run=False
+17:59:39 NOTE: running on CPU. No GPU results are produced by this invocation.
+C:\Users\sharn\OneDrive\Desktop\PROJECTS\Self pruning Network\src\self_pruning_network\research_data.py:29: VisibleDeprecationWarning: dtype(): align should be passed as Python or NumPy boolean but got `align=0`. Did you mean to pass a tuple to create a subarray type? (Deprecated NumPy 2.4)
+  entry = pickle.load(handle, encoding="latin1")
+18:42:48 seed 2024 source gated: measured removal damage for 208 units in 2569s
+19:26:31 seed 2024 source slimming: measured removal damage for 208 units in 2548s
+19:27:41 environment: torch 2.11.0+cpu cuda=False gpu=none python 3.11.9
+19:27:41 config=configs/vgg_cifar10_cpu.yaml seeds=[42, 123, 2024] device=cpu dry_run=False
+19:27:41 NOTE: running on CPU. No GPU results are produced by this invocation.
+19:27:47 analysis written to artifacts\research\vgg16_cpu\analysis and C:\Users\sharn\OneDrive\Desktop\PROJECTS\Self pruning Network\research\paper\figures\vgg16_cpu
+19:27:50 environment: torch 2.11.0+cpu cuda=False gpu=none python 3.11.9
+19:27:50 config=configs/vgg_cifar10_cpu.yaml seeds=[42, 123, 2024] device=cpu dry_run=False
+19:27:50 NOTE: running on CPU. No GPU results are produced by this invocation.
+19:28:54 dense r=0.0: params=14,724,042 macs=313,201,664 cpu bs1 median=10.242 ms
+19:29:42 uniform r=0.2: params=9,447,740 macs=202,391,060 cpu bs1 median=7.755 ms
+19:30:21 uniform r=0.4: params=5,332,682 macs=114,225,608 cpu bs1 median=7.110 ms
+19:30:41 uniform r=0.6: params=2,369,066 macs=51,285,022 cpu bs1 median=4.005 ms
+19:31:58 gated_soft_training_model r=0.0: params=14,724,042 macs=313,201,664 cpu bs1 median=34.182 ms
+19:31:58 wrote artifacts\research\vgg16_cpu\benchmark\benchmark_results.csv
+19:32:05 environment: torch 2.11.0+cpu cuda=False gpu=none python 3.11.9
+19:32:05 config=configs/vgg_cifar10_cpu.yaml seeds=[42, 123, 2024] device=cpu dry_run=False
+19:32:05 NOTE: running on CPU. No GPU results are produced by this invocation.
+19:32:13 analysis written to artifacts\research\vgg16_cpu\analysis and C:\Users\sharn\OneDrive\Desktop\PROJECTS\Self pruning Network\research\paper\figures\vgg16_cpu
