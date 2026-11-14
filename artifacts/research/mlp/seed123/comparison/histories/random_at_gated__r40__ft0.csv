@@ -1,0 +1,2 @@
+epoch,train_loss,train_accuracy,penalty,validation_loss,validation_accuracy,lr,epoch_time_s
+0,,,,1.6918353759765625,0.4976,,0.0

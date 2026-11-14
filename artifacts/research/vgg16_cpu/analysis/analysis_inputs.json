@@ -1,0 +1,18 @@
+{
+  "results_rows": 90,
+  "primary_ft": 3,
+  "methods": [
+    "bn_gamma@gated",
+    "control@dense",
+    "control@gated",
+    "control@slimming",
+    "gate_combined@gated",
+    "gate_in@gated",
+    "gate_out@gated",
+    "l1@dense",
+    "l1@gated",
+    "random@gated",
+    "slimming@slimming",
+    "taylor@gated"
+  ]
+}

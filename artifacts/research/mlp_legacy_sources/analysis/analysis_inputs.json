@@ -1,0 +1,22 @@
+{
+  "results_rows": 132,
+  "primary_ft": 1,
+  "methods": [
+    "activation@dense",
+    "activation@gated",
+    "bn_gamma@gated",
+    "control@dense",
+    "control@gated",
+    "gate_combined@gated",
+    "gate_in@gated",
+    "gate_out@gated",
+    "l1@dense",
+    "l1@gated",
+    "l2@dense",
+    "l2@gated",
+    "random@dense",
+    "random@gated",
+    "taylor@dense",
+    "taylor@gated"
+  ]
+}

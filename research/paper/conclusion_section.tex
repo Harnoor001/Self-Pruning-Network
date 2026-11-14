@@ -1,0 +1,32 @@
+% Conclusions are limited to the executed experiments (Section~\ref{sec:results}): the MLP
+% study and the reduced-budget VGG-16-BN study.
+We asked whether the learnable connection gates of an existing self-pruning MLP identify
+prunable neurons. Every criterion used the same compact architectures, fine-tuning budget
+and validation-based selection, over five seeds with 30-epoch sources. In the setting the
+existing method ships with ($\lambda=0$) the answer is \emph{no}: its neuron score, the
+mean incoming gate, gave lower accuracy than random neuron selection at every pruning ratio
+and on every seed, by up to $4.4$\,pp after fine-tuning, and its scores were
+anti-correlated with the measured damage of removing a neuron. The same result held on the
+original 5-epoch checkpoints. This matches the analysis in Section~\ref{sec:analysis}:
+behind batch normalization, the level of a neuron's incoming gates does not affect the
+network function.
+
+Three outcomes are constructive. First, reading the same gates on the outgoing side, which
+BN does not cancel, recovers the accuracy of standard magnitude criteria. Second, any
+positive gate penalty we tested removes the failure: gate-in then matches the other gate
+scores and exceeds random selection (descriptively, three seeds). Even so, in the main study no gate score exceeded the conventional
+criteria, and stronger sum penalties made the networks harder to prune for every
+criterion. Third, the audit found and corrected a gate-folding error in the original
+compact reconstruction. The results do \emph{not} show that gate-based criteria are better
+than conventional ones, and they establish no ranking among the conventional criteria,
+which were not tested against each other.
+
+A reduced-budget VGG-16-BN study (20-epoch sources, three fine-tuning epochs, three seeds)
+points in the same direction: gate-in fell below random at $40$ and $60\%$ channel removal
+and lost to every other criterion on every seed at $60\%$. With three seeds, however, only
+one comparison survives multiple-testing correction, so this is supporting rather than
+independent evidence for convolutional networks. The main conclusions rest on one MLP
+architecture on raw CIFAR-10 pixels, CPU-only measurements and three seeds for the
+ablations. The full VGG-16-BN protocol (160-epoch sources, 20 fine-tuning epochs, five
+seeds, gate-penalty ablation) on a GPU is the necessary next step before the findings can
+be generalized.

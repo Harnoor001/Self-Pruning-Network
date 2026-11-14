@@ -1,0 +1,36 @@
+# Stage B, REDUCED-BUDGET CPU variant of configs/vgg_cifar10.yaml.
+#
+# The full Stage B protocol (160-epoch sources, 20 fine-tuning epochs, 5 seeds, 16 methods)
+# needs a GPU. This variant keeps the same architecture (VGG-16-BN), data split, optimizer,
+# pruning ratios and selection rule, and reduces only the compute budget so that it can run
+# on a CPU. Every deviation from vgg_cifar10.yaml is listed here and must be reported with
+# any result produced from this file:
+#   * source training: 20 epochs instead of 160 (cosine schedule over the 20 epochs)
+#   * fine-tuning:      3 epochs instead of 20
+#   * seeds:            42, 123, 2024 (pilot seeds) instead of five
+#   * methods:          9 instead of 16 (see pruning.methods)
+#   * reliability:      16 sampled units per layer instead of 64; gated and Slimming sources only
+#   * ablations A/C:    not run
+#   * mixed precision:  off (CPU)
+# Results from this file are NOT results of the full protocol.
+extends: [vgg_cifar10.yaml]
+name: vgg16_cpu
+output_root: artifacts/research/vgg16_cpu
+seeds: [42, 123, 2024]
+pilot_seeds: [42, 123, 2024]
+train: {epochs: 20, amp: false}
+fine_tune: {epochs: 3, amp: false}
+pruning:
+  methods:
+    - random@gated
+    - l1@gated
+    - taylor@gated
+    - gate_in@gated                 # existing method (Method 6)
+    - gate_out@gated                # variant V1
+    - gate_combined@gated           # variant V2
+    - bn_gamma@gated                # diagnostic
+    - l1@dense                      # training-objective effect
+    - slimming@slimming             # Network Slimming (separately trained source)
+reliability:
+  sources: [gated, slimming]
+  units_per_layer: 16

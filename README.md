@@ -31,6 +31,21 @@ Structured rows are single fine-tuning runs. Repeating the same seed-42 fine-tun
 - **Size comparison.** Deployable weights drop from about 35.7 MB to 11.8 MB (~3x smaller, estimated at 4 bytes per parameter). The 107 MB dense checkpoint file is larger because it also stores training-time gate tensors, so it is not a like-for-like comparison.
 - These are single-environment measurements, not hardware-independent claims, and this is an MLP, not a state-of-the-art CIFAR-10 model. The goal is to measure compression trade-offs honestly.
 
+## Comparative research study (branch `research/comparative-pruning-study`)
+
+A comparison-first research extension evaluates whether the learned gates identify prunable neurons better than
+conventional criteria (random, L1/L2, activation, Taylor, Network Slimming) under identical architectures and budgets.
+The legacy pipeline below is unchanged.
+
+| Document | Purpose |
+|---|---|
+| [research/INITIAL_AUDIT.md](research/INITIAL_AUDIT.md) | Audit of this repository, including a gate-folding bug in compact reconstruction |
+| [research/experimental_protocol.md](research/experimental_protocol.md) | Fixed protocol, method definitions, statistics |
+| [research/literature_review.md](research/literature_review.md), [research/novelty_audit.md](research/novelty_audit.md) | Verified references and what is (not) novel |
+| [research/RUNNING.md](research/RUNNING.md) | Exact commands for every stage (CPU smoke tests, GPU runs) |
+| [research/results_analysis.md](research/results_analysis.md) | Results that were actually executed, with file provenance |
+| [research/paper/main.tex](research/paper/main.tex) | IEEE-style manuscript |
+
 ## Quick start
 
 ```bash

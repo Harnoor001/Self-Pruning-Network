@@ -1,0 +1,39 @@
+{
+  "best_epoch": 19,
+  "best_validation_accuracy": 0.9018,
+  "train_time_s": 12308.82336309999,
+  "epochs": 20,
+  "amp": false,
+  "source": "dense",
+  "seed": 2024,
+  "validation": {
+    "loss": 0.310248193359375,
+    "accuracy": 0.9018,
+    "n": 5000
+  },
+  "test": {
+    "loss": 0.3409068542480469,
+    "accuracy": 0.8912,
+    "n": 10000
+  },
+  "train_config": {
+    "epochs": 20,
+    "optimizer": "sgd",
+    "lr": 0.05,
+    "weight_decay": 0.0005,
+    "gate_weight_decay": 0.0,
+    "momentum": 0.9,
+    "nesterov": true,
+    "scheduler": "cosine",
+    "label_smoothing": 0.0,
+    "gate_lambda": 0.0,
+    "gate_penalty_norm": "sum",
+    "slimming_lambda": 0.0,
+    "train_gates": false,
+    "amp": false,
+    "include_initial": false,
+    "loader_seed": 2024,
+    "max_steps_per_epoch": null
+  },
+  "deployable_parameters": 14724042
+}
