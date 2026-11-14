@@ -108,6 +108,39 @@ bash scripts/research/run_vgg_cpu_pipeline.sh python     # one seed at a time, r
 Outputs go to `artifacts/research/vgg16_cpu/`, separate from the full-protocol folder
 `artifacts/research/vgg16/`.
 
+### 4d. Full Stage B on Kaggle (GPU T4 x2)
+
+`scripts/research/run_vgg_kaggle.sh` runs the full protocol (`configs/vgg_cifar10.yaml`) on
+both T4s: seeds and ablation tasks go to whichever GPU is free. It stops by itself after
+`BUDGET_H` hours (default 11, under Kaggle's 12 h limit) so that the output is saved, and a
+later session resumes from that output.
+
+1. New notebook → Settings → **Accelerator: GPU T4 x2**, **Internet on** (needs a
+   phone-verified Kaggle account).
+2. One code cell (the whole cell is bash):
+
+   ```bash
+   %%bash
+   pip install -q tabulate
+   git clone -q -b research/comparative-pruning-study https://github.com/Harnoor001/Self-Pruning-Network.git
+   cd Self-Pruning-Network
+   export RESTORE=$(find /kaggle/input -type d -path '*artifacts/research/vgg16' 2>/dev/null | head -1)
+   bash scripts/research/run_vgg_kaggle.sh
+   ```
+
+3. **Save Version → Save & Run All (Commit)**. It runs without the browser open and keeps
+   `/kaggle/working` as the version's output. Progress: `artifacts/research/vgg16/pipeline_gpu{0,1}.out`.
+4. Next session: **Add Input → Your Work →** the previous version's output, then Save & Run All
+   again. The cell finds the previous results automatically, and finished seeds are skipped.
+   Repeat until the log ends with `PIPELINE DONE`, then download the output's
+   `artifacts/research/vgg16/` folder.
+
+`DRY=1 bash scripts/research/run_vgg_kaggle.sh` lists finished and pending tasks without
+running anything. Time on T4s has not been measured; check the per-epoch times in the logs
+after the first few minutes. A rough guess is 15–20 h for the five main seeds on two GPUs plus
+about 10 h for ablation A (it trains six extra gated sources per pilot seed), i.e. three or
+more 11 h sessions.
+
 ## 4c. Compiling the manuscript
 
 Any LaTeX distribution works (`pdflatex` + `bibtex`). Without one, Tectonic is a single
