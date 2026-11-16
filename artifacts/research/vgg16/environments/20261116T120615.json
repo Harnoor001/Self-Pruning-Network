@@ -1,0 +1,15 @@
+{
+  "timestamp_utc": "2026-11-16T12:06:15.617493+00:00",
+  "python_version": "3.13.16",
+  "platform": "Linux-6.18.55+-x86_64-with-glibc2.39",
+  "processor": "x86_64",
+  "torch_version": "2.11.0+cu130",
+  "cuda_available": true,
+  "cuda_version": "13.0",
+  "cudnn_version": 92700,
+  "cpu_threads": 2,
+  "gpu_name": "Tesla T4",
+  "gpu_total_memory_bytes": 15636037632,
+  "gpu_free_memory_bytes": 15526068224,
+  "gpu_count": 1
+}

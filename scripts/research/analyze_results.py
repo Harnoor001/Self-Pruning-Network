@@ -285,6 +285,11 @@ def reliability(root: Path, dirs: list[Path]):
     # scatter for first seed, first source, layer 0
     first = paths[0].parent
     damage = pd.read_csv(first / "damage.csv")
+    if not (first / "scores.pt").exists():
+        # scores.pt is large and git-ignored; without it (results copied from another machine)
+        # the two raw-score figures are skipped and any existing copies are left untouched.
+        print(f"note: {first / 'scores.pt'} not found; skipping fig_score_vs_damage and fig_score_distribution")
+        return summary, stability
     scores = torch.load(first / "scores.pt", weights_only=False)
     source = damage["source"].iloc[0]
     crits = [c for c in ["gate_in", "gate_out", "taylor", "activation", "l1", "random"] if f"{c}@{source}" in scores]
@@ -351,6 +356,15 @@ def _mean_sd_pct(values: pd.Series) -> str:
     return f"{v.mean():.2f}" + (f" ± {v.std(ddof=1):.2f}" if len(v) > 1 else "") + f" (n={len(v)})"
 
 
+def _label_suffix(paper_tab: Path) -> str:
+    """LaTeX label suffix so ablation tables of several experiments can share one manuscript."""
+    return "" if paper_tab.name == "mlp" else "_" + paper_tab.name
+
+
+def _caption_tag(paper_tab: Path) -> str:
+    return "" if paper_tab.name == "mlp" else r" (\texttt{" + paper_tab.name.replace("_", r"\_") + "})"
+
+
 def ablation_c_section(frame: pd.DataFrame, config: dict, primary_ft: int, paper_tab: Path, publish: bool) -> list[str]:
     """Ablation C: test accuracy versus fine-tuning budget (rows written by run_ablation.py --which C)."""
     spec = config.get("ablation", {}).get("fine_tune")
@@ -368,8 +382,8 @@ def ablation_c_section(frame: pd.DataFrame, config: dict, primary_ft: int, paper
     # LaTeX: means only (SDs are in findings.md) to fit a column
     means = data.groupby(["method", "target_ratio", "ft_epochs"])["test_accuracy"].mean().unstack("ft_epochs") * 100
     tex = [r"\begin{table}[t]", r"\centering",
-           r"\caption{Ablation C: mean test accuracy (\%) versus fine-tuning epochs. The primary budget uses all seeds; the other budgets use the seeds on which ablation C was run (see findings.md for n per cell).}",
-           r"\label{tab:ablation_c}", r"\footnotesize", r"\setlength{\tabcolsep}{4pt}",
+           r"\caption{Ablation C" + _caption_tag(paper_tab) + ": mean test accuracy (\%) versus fine-tuning epochs. The primary budget uses all seeds; the other budgets use the seeds on which ablation C was run (see findings.md for n per cell).}",
+           r"\label{tab:ablation_c" + _label_suffix(paper_tab) + "}", r"\footnotesize", r"\setlength{\tabcolsep}{4pt}",
            r"\begin{tabular}{ll" + "c" * means.shape[1] + "}", r"\toprule",
            "Method & Removed & " + " & ".join(f"{int(c)} ep" for c in means.columns) + r" \\", r"\midrule"]
     for (method, ratio), row in means.iterrows():
@@ -431,9 +445,9 @@ def ablation_a_section(ablation_a: pd.DataFrame, frame: pd.DataFrame, lambda_sou
                   "", agg.to_markdown(index=False, floatfmt=".6g")]
     # LaTeX table (means only)
     tex = [r"\begin{table}[t]", r"\centering",
-           r"\caption{Ablation A: test accuracy (\%, mean over " + str(len(seeds)) +
+           r"\caption{Ablation A" + _caption_tag(paper_tab) + ": test accuracy (\%, mean over " + str(len(seeds)) +
            r" seeds) when the gated source is trained with different gate penalties.}",
-           r"\label{tab:ablation_a}", r"\footnotesize", r"\setlength{\tabcolsep}{2.5pt}",
+           r"\label{tab:ablation_a" + _label_suffix(paper_tab) + "}", r"\footnotesize", r"\setlength{\tabcolsep}{2.5pt}",
            r"\begin{tabular}{l" + "c" * (1 + len(criteria) * len(ratios)) + "}", r"\toprule",
            "Penalty & Source & " + " & ".join(CRITERION_LABEL.get(c, c) for _ in ratios for c in criteria) + r" \\",
            r"\midrule"]
