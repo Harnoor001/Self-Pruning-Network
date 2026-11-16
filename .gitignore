@@ -24,3 +24,6 @@ artifacts/**/checkpoints/
 artifacts/research/**/*.pt
 artifacts/research/smoke_*/
 artifacts/research/**/logs/
+
+# Manuscript (sources, PDF, paper figures and tables) is private until publication.
+research/paper/

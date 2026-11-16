@@ -2,7 +2,7 @@
 
 A PyTorch CIFAR-10 MLP that learns per-connection gate importance, converts those scores into explicit binary masks, hard-prunes connections, and fine-tunes with a fixed mask. A structured variant removes whole neurons and builds a physically smaller model.
 
-> **Status: work in progress.** This README reflects the current state of the project (last updated September 2026). Results are from a single-machine CPU setup and will be extended; see the [Roadmap](#roadmap).
+> **Status (November 2026).** The original project (sections from [Key results](#key-results) onward) is unchanged. A comparative research study built on top of it is complete; its findings are summarised [below](#research-study-do-the-learned-gates-identify-prunable-neurons). A manuscript based on the study is being prepared for conference submission and is not included in this repository.
 
 ## Key results
 
@@ -31,26 +31,67 @@ Structured rows are single fine-tuning runs. Repeating the same seed-42 fine-tun
 - **Size comparison.** Deployable weights drop from about 35.7 MB to 11.8 MB (~3x smaller, estimated at 4 bytes per parameter). The 107 MB dense checkpoint file is larger because it also stores training-time gate tensors, so it is not a like-for-like comparison.
 - These are single-environment measurements, not hardware-independent claims, and this is an MLP, not a state-of-the-art CIFAR-10 model. The goal is to measure compression trade-offs honestly.
 
-## Comparative research study (branch `research/comparative-pruning-study`)
+## Research study: do the learned gates identify prunable neurons?
 
-A comparison-first research extension evaluates whether the learned gates identify prunable neurons better than
-conventional criteria (random, L1/L2, activation, Taylor, Network Slimming) under identical architectures and budgets.
-The legacy pipeline below is unchanged.
+The study asks whether this project's learnable connection gates pick out unimportant neurons (or channels) better than conventional pruning criteria. Every criterion is compared under the same conditions: identical compact architectures per pruning ratio, the same fine-tuning budget, model selection on a validation split only, five seeds (42, 123, 2024, 7, 21), and a fixed 45k / 5k / 10k CIFAR-10 split. The original pipeline described in the rest of this README was not modified.
 
-| Document | Purpose |
+**Short answer: no.** The existing score (the mean incoming gate of a neuron, "gate-in") selected neurons *worse than random selection* on both architectures tested.
+
+### Test accuracy after pruning and fine-tuning (%, mean ± SD over 5 seeds)
+
+| | MLP, 20% removed | 40% | 60% | VGG-16-BN, 20% removed | 40% | 60% |
+|---|---:|---:|---:|---:|---:|---:|
+| **Gate-in (existing method)** | **58.26 ± 0.24** | **56.29 ± 0.16** | **53.58 ± 0.28** | **92.34 ± 0.24** | **89.94 ± 1.15** | **86.75 ± 0.51** |
+| Random | 59.98 ± 0.24 | 59.22 ± 0.22 | 57.95 ± 0.07 | 92.74 ± 0.08 | 92.19 ± 0.17 | 90.19 ± 0.21 |
+| L1 magnitude | 60.39 ± 0.09 | 59.96 ± 0.26 | 58.82 ± 0.21 | 92.94 ± 0.17 | 92.54 ± 0.07 | 91.22 ± 0.19 |
+| Taylor | 60.43 ± 0.24 | 59.98 ± 0.13 | 58.82 ± 0.33 | 92.83 ± 0.19 | 92.31 ± 0.36 | 90.87 ± 0.30 |
+| Network Slimming (own source) | 59.41 ± 0.23 | 59.27 ± 0.29 | 58.57 ± 0.19 | 92.94 ± 0.21 | 92.39 ± 0.24 | 90.28 ± 0.58 |
+| Gate-out (variant V1) | 60.16 ± 0.21 | 59.87 ± 0.21 | 58.72 ± 0.08 | 92.88 ± 0.19 | 92.12 ± 0.17 | 90.56 ± 0.32 |
+| Gate-combined (variant V2) | 60.26 ± 0.17 | 59.68 ± 0.28 | 58.66 ± 0.21 | 92.54 ± 0.28 | 90.67 ± 0.74 | 86.70 ± 0.43 |
+| Unpruned + same fine-tuning | 60.46 ± 0.20 | | | 93.26 ± 0.27 | | |
+
+All rows except Network Slimming score the same gated source model. MLP: 30-epoch sources, 5 fine-tuning epochs, CPU. VGG-16-BN: 160-epoch sources, 20 fine-tuning epochs, two Tesla T4 GPUs on Kaggle. Sixteen methods were compared in total; the full tables are in [research/results_analysis.md](research/results_analysis.md).
+
+| MLP | VGG-16-BN |
 |---|---|
-| [research/INITIAL_AUDIT.md](research/INITIAL_AUDIT.md) | Audit of this repository, including a gate-folding bug in compact reconstruction |
+| ![MLP accuracy vs pruning ratio](artifacts/research/mlp/analysis/plots/fig_accuracy_vs_ratio.png) | ![VGG-16-BN accuracy vs pruning ratio](artifacts/research/vgg16/analysis/plots/fig_accuracy_vs_ratio.png) |
+
+### Findings
+
+1. **Gate-in is worse than random on both architectures.**
+   - MLP: below random on every seed at every ratio, by 1.7 / 2.9 / 4.4 pp. All 45 comparisons against the 15 alternatives are supported (paired t-test, Holm-corrected).
+   - VGG-16-BN: 14 of 15 alternatives beat it on all five seeds at every ratio. After Holm correction 23 of 45 comparisons are supported: 8 at 20% (random is not one of them, +0.40 pp, p = 0.061), 1 at 40%, and 14 at 60% (random +3.44 pp).
+   - Before fine-tuning, removing 20% of VGG channels by gate-in leaves the network at chance (10.8%), while random selection keeps 51.5%.
+2. **Why.** Behind batch normalization, scaling all incoming weights of a neuron does not change the network function, so the level of a neuron's incoming gates carries no importance signal. In the default setting (penalty weight λ = 0) the gates also barely move from their initial value σ(2) = 0.881.
+3. **The gate variants are not a reliable fix.** Reading the gates on the outgoing side (V1) or combining both sides (V2) recovers the accuracy of magnitude criteria on the MLP. On VGG-16-BN, V1 only matches random and V2 fails together with gate-in.
+4. **A gate penalty helps on the MLP but not on VGG.** On the MLP any positive λ removes the gate-in deficit. On VGG-16-BN it reduces the deficit but does not remove it: the penalty shifts all gates together without separating channels (3 seeds, descriptive).
+5. **No gate score beat the conventional criteria** in the main study. On VGG-16-BN, L1, L2, BN-scale, activation and Taylor end within about 1 pp of each other and of random after 20 fine-tuning epochs.
+6. **Measured speed is below the theoretical saving.** Removing 60% of VGG channels cuts MACs by 84% (6.1× in theory) and gives a measured 2.92× on a Tesla T4 at batch 256, 3.56× on one CPU thread at batch 1, and no usable gain on the GPU at batch 1.
+7. **The audit found a bug** in the original compact reconstruction (gates were not folded into the weights); the research code corrects it without changing the legacy pipeline. See [research/INITIAL_AUDIT.md](research/INITIAL_AUDIT.md).
+
+**How this relates to the results below.** The legacy "learned vs random" comparison in this README is at the level of individual connections. The study above concerns whole neurons and channels, which is what structured pruning removes.
+
+**Limits.** Two architectures, one dataset, the gate initialisation of the existing implementation, and three seeds for the ablations. Network Slimming is trained with its own objective, so its source differs. ResNet experiments were not run.
+
+### Where things are
+
+| Path | Content |
+|---|---|
+| [research/results_analysis.md](research/results_analysis.md) | All executed results with the file each number comes from |
 | [research/experimental_protocol.md](research/experimental_protocol.md) | Fixed protocol, method definitions, statistics |
 | [research/literature_review.md](research/literature_review.md), [research/novelty_audit.md](research/novelty_audit.md) | Verified references and what is (not) novel |
-| [research/RUNNING.md](research/RUNNING.md) | Exact commands for every stage (CPU smoke tests, GPU runs) |
-| [research/results_analysis.md](research/results_analysis.md) | Results that were actually executed, with file provenance |
-| [research/paper/main.tex](research/paper/main.tex) | IEEE-style manuscript |
+| [research/INITIAL_AUDIT.md](research/INITIAL_AUDIT.md) | Audit of the original repository |
+| [research/RUNNING.md](research/RUNNING.md) | Exact commands for every stage (CPU, single GPU, Kaggle T4 x2) |
+| `artifacts/research/{mlp,mlp_legacy_sources,vgg16,vgg16_cpu}/` | Result CSVs, analysis, plots, benchmarks, environment records |
+| `configs/`, `scripts/research/`, `src/self_pruning_network/` | Configurations and code of the study |
+
+The manuscript (`research/paper/`) is kept private while it is under preparation for conference submission. The analysis script still writes paper tables and figures to that folder locally.
 
 ## Quick start
 
 ```bash
 pip install -r requirements.txt
-pytest -q                                    # 20 tests
+pytest -q                                    # 64 tests (20 legacy + 44 research)
 python scripts/train_and_report.py --epochs 5 --batch-size 128 --hidden-dims 2048 1024 512 --lambdas 0 0.001 --prune --pruning-strategy target --target-sparsities 20 40 60 80 --fine-tune-epochs 1
 ```
 
@@ -366,7 +407,7 @@ Run:
 pytest -q
 ```
 
-The final repository test run passed 20 tests. Tests cover dense forward behavior, soft gate gradients, gate conversion, threshold masks, exact zeroing, fixed-mask enforcement, target sparsity, reproducible random and learned masks, structured dimension compaction, weight and BatchNorm transfer, parameter/MAC accounting, checkpoint reload, accuracy-drop calculation, and compact-model fine-tuning invariants.
+The current test run passes 64 tests (20 for the original pipeline, 44 for the research code). Tests cover dense forward behavior, soft gate gradients, gate conversion, threshold masks, exact zeroing, fixed-mask enforcement, target sparsity, reproducible random and learned masks, structured dimension compaction, weight and BatchNorm transfer, parameter/MAC accounting, checkpoint reload, accuracy-drop calculation, and compact-model fine-tuning invariants.
 
 ## Limitations
 
@@ -384,7 +425,8 @@ This project is under active development. Planned next steps:
 
 - [ ] Run the full 20/40/60/80 learned-vs-random sweep across all three seeds
 - [ ] Extend multi-seed validation to the full unstructured benchmark, not only the 60% target
-- [ ] Repeat the pruning study on a CNN to address the MLP limitation
-- [ ] Benchmark latency on additional hardware (and GPU) to test how far the speedups generalize
+- [x] Repeat the pruning study on a CNN (VGG-16-BN, see the research study above)
+- [ ] Extend the comparison to residual networks and a second dataset
+- [x] Benchmark latency on a GPU (Tesla T4, research study)
 - [ ] Explore sparse kernels or compiler support to see when unstructured sparsity can pay off in latency
 - [ ] Add a live demo of the inference API

@@ -5,12 +5,12 @@ venue, year and DOI/official URL were checked against at least one official or
 bibliographic source during this review (sources listed per entry). (Update 2026-11-10:
 the three former ⚠️ entries were completed from CVF/arXiv listings and added to the bib.) Entries marked ⚠️
 have verified title/venue/URL but an incomplete author list; they are **not** in
-`paper/references.bib` and must not be cited until completed. Entries marked 📘 are
+`references.bib` and must not be cited until completed. Entries marked 📘 are
 standard references cited from the reviewer's knowledge of the canonical publication;
 they should be spot-checked before submission. No reference, author, DOI or venue was
 invented.
 
-BibTeX keys refer to [`paper/references.bib`](paper/references.bib).
+BibTeX keys refer to [`references.bib`](references.bib).
 
 ---
 

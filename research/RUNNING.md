@@ -146,6 +146,9 @@ files without a GPU (it skips the two raw-score figures when `scores.pt` is abse
 
 ## 4c. Compiling the manuscript
 
+The manuscript folder `research/paper/` is git-ignored (private until publication); this
+section applies to a local copy.
+
 Any LaTeX distribution works (`pdflatex` + `bibtex`). Without one, Tectonic is a single
 binary:
 
