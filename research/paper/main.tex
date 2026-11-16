@@ -40,11 +40,12 @@ alternative criteria beat it (Holm-corrected paired $t$-test). Its scores were
 anti-correlated with single-neuron removal damage. Reading the same gates on the outgoing
 side, which batch normalization does not cancel, recovers the accuracy of magnitude
 criteria, and any positive gate penalty removes the failure, but no gate score exceeded
-the conventional criteria. A reduced-budget VGG-16-BN study on CPU (20-epoch sources,
-three fine-tuning epochs, three seeds) points the same way: gate-in was below random at
-$40$ and $60\%$ channel removal ($83.6$ vs.\ $85.0\%$ at $60\%$), and at $60\%$ every other
-criterion beat it on all three seeds, but at $n=3$ only one of 24 differences survives Holm
-correction.
+the conventional criteria. A VGG-16-BN study at full budget (160-epoch sources, 20
+fine-tuning epochs, five seeds, 16 methods) confirms the main result: the score was below
+random channel selection at every ratio ($86.75$ vs.\ $90.19\%$ at $60\%$ removal, where
+14 of 15 alternatives beat it with Holm-corrected support). There, however, combining
+incoming and outgoing gates failed as well, the outgoing-gate score only matched random
+selection, and a gate penalty did not remove the deficit.
 \end{abstract}
 
 \begin{IEEEkeywords}
@@ -237,24 +238,29 @@ also reported with its original global ranking at the same total unit budget.
 \begin{itemize}
 \item \textbf{Executed scope.} The MLP study (five seeds), its ablations A and C (three
 seeds) and the verification on the original checkpoints were executed on CPU. The
-VGG-16-BN study was executed only at a reduced budget (Section~\ref{sec:vgg}: 20 instead of
-160 source epochs, 3 instead of 20 fine-tuning epochs, 3 instead of 5 seeds, 9 of 16
-methods, no ablations); the full protocol is implemented but was not run.
+VGG-16-BN study (Section~\ref{sec:vgg}) ran the full protocol on two Tesla T4 GPUs, with
+ablations A and C on three seeds. ResNet experiments were not run.
 \item \textbf{Model quality.} The MLP sources reach about 60\% test accuracy on raw
 pixels; conclusions may differ for stronger models.
 \item \textbf{Statistical power.} With five seeds the exact Wilcoxon test cannot reach
 $p<0.0625$, so significance rests on the paired $t$-test, whose normality assumption is
-questionable for 4 of 45 comparisons. Ablations A and C (three seeds) are descriptive. The
-VGG comparisons use three seeds (Wilcoxon floor $p=0.25$); only one survives Holm
-correction, so they are largely descriptive.
+questionable for 4 of 45 comparisons. Ablations A and C (three seeds) are descriptive. In
+the VGG study 23 of 45 comparisons are supported after Holm correction; at $40\%$ removal
+only one is, although 14 methods beat gate-in on all five seeds.
 \item \textbf{Confounds.} Network Slimming is evaluated on its own source, which is
 $0.6$\,pp weaker; global allocation changes the architecture and is not an equal-cost
 comparison.
-\item \textbf{Hardware.} Latency was measured on one laptop CPU; no GPU was available, so
-no GPU latency or memory figures are reported.
-\item \textbf{Architecture.} The MLP on raw pixels is not representative of modern vision
-models. The CNN evidence comes from one reduced-budget VGG-16-BN study whose gated source
-was trained with $\lambda=0$ only; the gate-penalty ablation was not repeated for VGG.
+\item \textbf{Hardware.} MLP latency was measured on one laptop CPU. VGG latency was
+measured on a shared cloud host (one Tesla T4, one CPU thread); GPU timings at batch size 1
+are at the noise level, and peak GPU memory was not monotone in model size and is not
+reported.
+\item \textbf{Architecture.} Two architectures (an MLP on raw pixels and VGG-16-BN) on one
+dataset were studied, with the gate initialization of the existing implementation
+($S=2$). The gate variants behaved differently on the two architectures, so the findings
+about them should not be extrapolated to residual networks or other datasets.
+\item \textbf{Reliability measure.} On VGG-16-BN, single-channel removal changes the
+validation loss too little to rank criteria; the correlations there are reported for
+completeness only.
 \end{itemize}
 
 \section{Conclusion}

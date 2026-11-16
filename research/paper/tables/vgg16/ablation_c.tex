@@ -1,0 +1,31 @@
+\begin{table}[t]
+\centering
+\caption{Ablation C (\texttt{vgg16}): mean test accuracy (\%) versus fine-tuning epochs. The primary budget uses all seeds; the other budgets use the seeds on which ablation C was run (see findings.md for n per cell).}
+\label{tab:ablation_c_vgg16}
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{llcccc}
+\toprule
+Method & Removed & 0 ep & 1 ep & 3 ep & 5 ep \\
+\midrule
+Gate-combined (V2) & 20\% & 11.78 & 84.23 & 91.06 & 92.07 \\
+Gate-combined (V2) & 40\% & 10.00 & 66.92 & 83.97 & 88.82 \\
+Gate-combined (V2) & 60\% & 10.00 & 45.18 & 70.91 & 77.88 \\
+Gate-in (existing) & 20\% & 11.31 & 83.92 & 90.87 & 91.72 \\
+Gate-in (existing) & 40\% & 10.00 & 63.57 & 82.61 & 86.77 \\
+Gate-in (existing) & 60\% & 10.00 & 40.60 & 67.50 & 75.91 \\
+L1 in+out & 20\% & 67.00 & 87.26 & 92.03 & 92.45 \\
+L1 in+out & 40\% & 19.53 & 83.57 & 90.95 & 91.71 \\
+L1 in+out & 60\% & 10.00 & 74.91 & 87.92 & 89.67 \\
+Random & 20\% & 47.31 & 85.37 & 91.67 & 92.22 \\
+Random & 40\% & 13.23 & 80.42 & 90.23 & 91.32 \\
+Random & 60\% & 10.00 & 71.98 & 84.69 & 87.97 \\
+Net. Slimming & 20\% & 74.87 & 87.20 & 92.06 & 92.59 \\
+Net. Slimming & 40\% & 32.20 & 84.72 & 90.94 & 91.90 \\
+Net. Slimming & 60\% & 10.11 & 68.16 & 84.36 & 87.17 \\
+Taylor & 20\% & 67.62 & 86.22 & 91.99 & 92.44 \\
+Taylor & 40\% & 18.67 & 82.79 & 90.75 & 91.57 \\
+Taylor & 60\% & 10.11 & 74.48 & 87.26 & 88.94 \\
+\bottomrule
+\end{tabular}
+\end{table}

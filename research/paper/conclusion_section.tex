@@ -1,5 +1,5 @@
 % Conclusions are limited to the executed experiments (Section~\ref{sec:results}): the MLP
-% study and the reduced-budget VGG-16-BN study.
+% study and the full-protocol VGG-16-BN study.
 We asked whether the learnable connection gates of an existing self-pruning MLP identify
 prunable neurons. Every criterion used the same compact architectures, fine-tuning budget
 and validation-based selection, over five seeds with 30-epoch sources. In the setting the
@@ -21,12 +21,17 @@ compact reconstruction. The results do \emph{not} show that gate-based criteria 
 than conventional ones, and they establish no ranking among the conventional criteria,
 which were not tested against each other.
 
-A reduced-budget VGG-16-BN study (20-epoch sources, three fine-tuning epochs, three seeds)
-points in the same direction: gate-in fell below random at $40$ and $60\%$ channel removal
-and lost to every other criterion on every seed at $60\%$. With three seeds, however, only
-one comparison survives multiple-testing correction, so this is supporting rather than
-independent evidence for convolutional networks. The main conclusions rest on one MLP
-architecture on raw CIFAR-10 pixels, CPU-only measurements and three seeds for the
-ablations. The full VGG-16-BN protocol (160-epoch sources, 20 fine-tuning epochs, five
-seeds, gate-penalty ablation) on a GPU is the necessary next step before the findings can
-be generalized.
+The VGG-16-BN study at full budget (160-epoch sources, 20 fine-tuning epochs, five
+seeds) confirms the main answer for a convolutional network: gate-in was below random
+channel selection at every ratio, by $3.4$\,pp at $60\%$ removal, where 14 of 15
+alternatives beat it with statistical support, and networks pruned by it recovered far
+more slowly during fine-tuning. It does not confirm the constructive outcomes of the MLP
+study. On VGG-16-BN the combined gate score failed together with gate-in, the outgoing
+gate score only matched random selection, and a gate penalty reduced but did not remove
+the deficit, because it shifted all gates together without separating channels. In this
+study, therefore, the connection gates did not provide a usable importance signal for
+VGG-16-BN under any tested setting, while $\ell_1$, $\ell_2$, BN-scale, activation and
+Taylor criteria were within about $1$\,pp of each other and of random selection after
+fine-tuning. The conclusions rest on two architectures and one dataset, three seeds for
+the ablations, and the gate initialization of the existing implementation; residual
+networks, other datasets and other gate parameterizations remain to be tested.

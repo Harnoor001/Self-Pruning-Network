@@ -12,9 +12,10 @@ below is copied from a generated file; the file is named next to each table.
   (`configs/vgg_cifar10_cpu.yaml`, `artifacts/research/vgg16_cpu/`): 20-epoch sources, 3 FT
   epochs, 3 seeds, 9 methods, no ablations.
 
-The full-protocol VGG-16-BN study (`configs/vgg_cifar10.yaml`: 160-epoch sources, 20 FT
-epochs, 5 seeds, 16 methods, ablations) is implemented but was **not run**: the machine has no
-GPU. Part III is not a substitute for it and is never reported as such.
+* **Part IV** — the **full-protocol** VGG-16-BN / CIFAR-10 study on two Kaggle T4 GPUs
+  (`configs/vgg_cifar10.yaml`, `artifacts/research/vgg16/`): 160-epoch sources, 20 FT epochs,
+  5 seeds, 16 methods, ablations A and C, GPU benchmark. This is the Stage B result. Part III
+  is kept as the earlier reduced-budget record; where the two overlap, Part IV supersedes it.
 
 # Part I — research-protocol MLP study
 
@@ -497,4 +498,243 @@ folded (`to_plain`) before deployment. **No GPU latency or GPU memory was measur
 
 ```bash
 bash scripts/research/run_vgg_cpu_pipeline.sh python   # about 20 h per seed on a 20-thread CPU
+```
+
+# Part IV — full-protocol VGG-16-BN study (Kaggle, 2 × Tesla T4)
+
+Sources: `artifacts/research/vgg16/analysis/findings.md`, `summary.csv`, `paired_tests.csv`,
+`reliability_summary.csv`, `stability_summary.csv`, `ablation_a_summary.csv`,
+`ablation_a_gate_statistics.csv`, `benchmark/benchmark_results.csv`, `results.csv`.
+
+## IV.0 What was executed
+
+| Item | Value |
+|---|---|
+| Config | `configs/vgg_cifar10.yaml`, unmodified (resolved copy `artifacts/research/vgg16/experiment_config.yaml`); the runner only overrides `data.data_dir` and `data.num_workers` |
+| Seeds | 42, 123, 2024, 7, 21; ablations A and C on the pilot seeds 42/123/2024 |
+| Model / data | VGG-16-BN, CIFAR-10, fixed 45k/5k/10k split (`split_seed 0`), standard augmentation; test set used only for reporting |
+| Sources (per seed) | dense (CE), gated (existing objective, **λ = 0**, sum penalty), Slimming (CE + 1e-4·Σ\|γ\|); 160 epochs, SGD-Nesterov lr 0.05, wd 5e-4 (gate wd 0), cosine, mixed precision; best-validation epoch kept (epochs 134–159) |
+| Source test accuracy (mean ± SD, 5 seeds) | dense 93.41 ± 0.27, gated 93.26 ± 0.27, Slimming 93.27 ± 0.18 % (`results.csv`, `source_test_accuracy` of the control rows) |
+| Methods (16) | random, L1, L2, activation, Taylor on the dense and on the gated source; gate-in (existing), gate-out (V1), gate-combined (V2), BN-\|γ\| on the gated source; Network Slimming on its own source with uniform and with global allocation |
+| Ratios | 20 / 40 / 60 % of channels; uniform allocation gives identical compact architectures for 15 of the 16 methods |
+| Fine-tuning | 20 epochs, SGD lr 0.01, cosine, identical for every method; best-validation checkpoint (incl. epoch 0) |
+| Control | each unpruned source + the same 20-epoch fine-tuning |
+| Reliability | 64 random channels per conv layer, 13 layers, all three sources, 5 seeds (12,480 single-channel removals) |
+| Rows | 585 in `results.csv`: 255 main rows (5 seeds × (16 × 3 + 3 controls)), 240 ablation C rows, 90 ablation A rows |
+| Hardware | Kaggle, 2 × Tesla T4, torch 2.11.0+cu130, Python 3.13 (`environments/*.json`); three sessions of at most 11 h, each resumed from the previous session's output (`scripts/research/run_vgg_kaggle.sh`) |
+| Time | source training 32 min (dense), 38 min (gated), 33 min (Slimming) per source on one T4; fine-tuning 197 s per row on average (`results.csv`: `source_train_time_s`, `fine_tune_time_s`) |
+
+The analysis was re-run locally on the downloaded CSVs; `summary.csv` and `paired_tests.csv`
+reproduce the Kaggle files to 10⁻⁹. Model checkpoints, masks and `reliability/scores.pt` stayed
+on Kaggle (too large to download), so the two score figures (`fig_score_distribution`,
+`fig_score_vs_damage`) are the ones produced by the Kaggle run.
+
+## IV.1 RQ1/RQ2: accuracy after pruning (20 FT epochs, 5 seeds)
+
+Test accuracy (%), mean ± SD over 5 seeds (`analysis/summary.csv`; paper table
+`tables/vgg16/main_accuracy.tex`). "Pre-FT" is the mean test accuracy at 20 % before fine-tuning.
+
+| Method (source) | 20 % | 40 % | 60 % | Pre-FT 20 % |
+|---|---|---|---|---|
+| **Gate-in, existing (gated)** | **92.34 ± 0.24** | **89.94 ± 1.15** | **86.75 ± 0.51** | 10.79 |
+| Gate-combined V2 (gated) | 92.54 ± 0.28 | 90.67 ± 0.74 | 86.70 ± 0.43 | 11.10 |
+| Gate-out V1 (gated) | 92.88 ± 0.19 | 92.12 ± 0.17 | 90.56 ± 0.32 | 47.96 |
+| Random (gated) | 92.74 ± 0.08 | 92.19 ± 0.17 | 90.19 ± 0.21 | 51.54 |
+| Random (dense) | 92.88 ± 0.12 | 92.13 ± 0.25 | 90.60 ± 0.09 | 50.10 |
+| L1 (gated) | 92.94 ± 0.17 | 92.54 ± 0.07 | 91.22 ± 0.19 | 67.20 |
+| L1 (dense) | 92.80 ± 0.19 | 92.38 ± 0.19 | 91.19 ± 0.23 | 69.08 |
+| L2 (gated) | 93.03 ± 0.30 | 92.51 ± 0.30 | 91.10 ± 0.11 | 67.27 |
+| L2 (dense) | 92.93 ± 0.15 | 92.37 ± 0.14 | 91.16 ± 0.24 | 71.01 |
+| BN-\|γ\| (gated) | 93.05 ± 0.19 | 92.42 ± 0.15 | 91.10 ± 0.30 | 72.93 |
+| Taylor (gated) | 92.83 ± 0.19 | 92.31 ± 0.36 | 90.87 ± 0.30 | 67.71 |
+| Taylor (dense) | 92.91 ± 0.27 | 92.38 ± 0.06 | 91.06 ± 0.28 | 78.25 |
+| Activation (gated) | 92.84 ± 0.22 | 92.23 ± 0.10 | 90.68 ± 0.23 | 78.69 |
+| Activation (dense) | 92.89 ± 0.30 | 92.28 ± 0.23 | 90.70 ± 0.22 | 79.42 |
+| Slimming, uniform | 92.94 ± 0.21 | 92.39 ± 0.24 | 90.28 ± 0.58 | 78.08 |
+| Slimming, global (different architecture) | 93.26 ± 0.20 | 93.29 ± 0.22 | 93.34 ± 0.14 | 93.27 |
+
+Unpruned source + the same fine-tuning: dense 93.25 ± 0.25, gated 93.26 ± 0.27, Slimming
+93.25 ± 0.16.
+
+Uniform allocation: parameter reduction 35.8 / 63.8 / 83.9 %, MAC reduction 35.4 / 63.5 / 83.6 %
+for every method. Slimming with global allocation: parameter reduction 38.4 / 65.1 / 82.3 % but
+MAC reduction only 16.8 / 29.4 / 40.0 %, because the global threshold removes channels mainly
+from the first and the last six conv layers (widths in `benchmark/benchmark_results.csv`); it is not a
+like-for-like comparison.
+
+Paired comparisons against gate-in (`analysis/paired_tests.csv`; paired t-test on the per-seed
+difference, Holm within ratio over 15 comparisons):
+
+* **20 %:** all 14 methods other than gate-combined beat gate-in on 5/5 seeds, by +0.40 … +0.92
+  pp. Eight are supported after Holm (activation on both sources, BN-\|γ\|, gate-out, L2 dense,
+  Taylor dense, Slimming uniform and global; Holm p = 0.0005 – 0.035). **Random on the gated
+  source is +0.40 pp (95 % CI [0.09, 0.71]) and is not supported (Holm p = 0.061).**
+* **40 %:** the same 14 methods beat gate-in on 5/5 seeds by +2.18 … +3.35 pp, each with an
+  unadjusted p < 0.02, but gate-in varies strongly between seeds here (88.18 – 90.96 %, SD 1.15)
+  and **only Slimming-global is supported after Holm** (p = 0.021); the other 13 have Holm
+  p = 0.103. Random: +2.25 pp, CI [0.87, 3.64].
+* **60 %:** the same 14 methods beat gate-in on 5/5 seeds by +3.44 … +6.58 pp and **all 14 are
+  supported** (Holm p ≤ 0.0009). Random: +3.44 pp, CI [2.59, 4.29].
+* **Gate-combined (V2) is not distinguishable from gate-in** at any ratio (+0.20, +0.73,
+  −0.05 pp; Holm p ≥ 0.10).
+* The exact Wilcoxon test cannot go below p = 0.0625 at n = 5; every 5/5 comparison sits at that
+  floor and none survives Holm (adjusted p = 0.94). Statistical support comes from the t-test
+  only (Shapiro–Wilk p > 0.06 for all 45 differences; at n = 5 this check has little power).
+* In total 23 of 45 comparisons are supported after Holm.
+
+**Reading.**
+
+1. With the full budget the answer for VGG-16-BN is the same as for the MLP: **the existing
+   gate-in score selects channels worse than random selection**; the difference is small at
+   20 % and reaches 3.4 pp at 60 %. Before fine-tuning, gate-in pruning leaves the network at
+   chance (10.8 %) already at 20 %, where random selection keeps 51.5 %.
+2. **Gate-combined (V2) fails as well on VGG** (pre-FT 11.1 %; within noise of gate-in after
+   fine-tuning). This differs from the MLP (Part I) and from the reduced-budget VGG run (Part
+   III), where V2 was among the better criteria. V2 is therefore not a robust fix.
+3. **Gate-out (V1) is indistinguishable from random** on VGG (92.88 / 92.12 / 90.56 vs
+   92.74 / 92.19 / 90.19; descriptive, not tested).
+4. Among the conventional criteria the spread after 20 FT epochs is small: at 60 % the best
+   (L1, 91.2 %) is about 1.0 pp above random and the criteria differ from each other by at most
+   0.5 pp (descriptive; not tested). Large pre-FT differences (activation 79 % vs random 50 %
+   at 20 %) are mostly erased by fine-tuning.
+5. The source does not matter: L1, L2, Taylor, activation and random give the same accuracy on
+   the dense and on the gated source to within 0.4 pp. Training with gates neither helps nor
+   harms conventional criteria.
+
+## IV.2 Ablation C: fine-tuning budget (pilot seeds; FT 20 from the main study)
+
+Test accuracy (%), mean over the 3 pilot seeds for FT 0–5, over 5 seeds for FT 20
+(`analysis/summary.csv`).
+
+| Ratio | Method | FT 0 | FT 1 | FT 3 | FT 5 | FT 20 |
+|---|---|---|---|---|---|---|
+| 20 % | gate-in | 11.31 | 83.92 | 90.87 | 91.72 | 92.34 |
+| | random | 47.31 | 85.37 | 91.67 | 92.22 | 92.74 |
+| | L1 | 67.00 | 87.26 | 92.03 | 92.45 | 92.94 |
+| 40 % | gate-in | 10.00 | 63.57 | 82.61 | 86.77 | 89.94 |
+| | random | 13.23 | 80.42 | 90.23 | 91.32 | 92.19 |
+| | L1 | 19.53 | 83.57 | 90.95 | 91.71 | 92.54 |
+| 60 % | gate-in | 10.00 | 40.60 | 67.50 | 75.91 | 86.75 |
+| | random | 10.00 | 71.98 | 84.69 | 87.97 | 90.19 |
+| | L1 | 10.00 | 74.91 | 87.92 | 89.67 | 91.22 |
+
+The gate-in deficit against random at 60 % shrinks with the budget (31.4 → 17.2 → 12.1 → 3.4
+pp at FT 1 / 3 / 5 / 20) but does not close. Gate-combined follows gate-in (45.2 / 70.9 / 77.9 %
+at 60 % for FT 1 / 3 / 5). Networks pruned by gate-in are therefore much slower to recover, not
+only slightly worse at the end. FT 0–5 use 3 seeds and are descriptive.
+
+## IV.3 Ablation A: gate penalty strength (pilot seeds, 40 % removed, FT 20)
+
+`analysis/ablation_a_summary.csv` (test %, mean ± SD, n = 3) and
+`analysis/ablation_a_gate_statistics.csv` (mean gate of the first conv layer; the other layers
+agree to three decimals).
+
+| Gated source | Source acc. | Mean gate | Gate-in | Gate-out | Gate-combined | Random |
+|---|---|---|---|---|---|---|
+| λ = 0 (main) | 93.29 ± 0.38 | 0.881 | 89.89 ± 1.50 | 92.13 ± 0.19 | 90.78 ± 1.02 | 92.12 ± 0.02 |
+| λ = 1e-6, sum | 93.24 ± 0.05 | 0.881 | 91.53 ± 0.12 | 91.92 ± 0.12 | 91.08 ± 0.20 | 92.24 ± 0.08 |
+| λ = 1e-5, sum | 93.45 ± 0.17 | 0.879 | 91.55 ± 0.14 | 92.23 ± 0.25 | 91.34 ± 0.12 | 92.23 ± 0.22 |
+| λ = 1e-4, sum | 93.39 ± 0.08 | 0.863 | 91.88 ± 0.32 | 92.18 ± 0.15 | 91.26 ± 0.27 | 92.26 ± 0.11 |
+| λ = 1e-3, sum | 93.30 ± 0.18 | 0.334 | 91.84 ± 0.32 | 89.90 ± 0.60 | 89.94 ± 0.51 | 90.42 ± 0.06 |
+| λ = 0.1, mean | 93.42 ± 0.21 | 0.881 | 90.46 ± 1.43 | 92.32 ± 0.22 | 90.65 ± 1.02 | 92.22 ± 0.19 |
+| λ = 1, mean | 93.44 ± 0.14 | 0.881 | 91.22 ± 0.15 | 92.22 ± 0.25 | 91.23 ± 0.11 | 92.26 ± 0.12 |
+
+* The penalty does not hurt the source (93.2 – 93.5 % for every λ).
+* A sum penalty with λ ≥ 1e-6 raises gate-in from 89.9 % to 91.5 – 91.9 %, but for λ ≤ 1e-4 it
+  stays **0.4 – 0.7 pp below random**. Unlike the MLP (§I.5), a penalty does not remove the
+  deficit on VGG.
+* At λ = 1e-3 gate-in (91.84 %) is above random (90.42 %), but this is because random, gate-out
+  and gate-combined all *lose* about 2 pp on that source while gate-in keeps its level. All
+  gates of that source collapsed to the same value (mean 0.334 in every layer).
+* **The penalty moves all gates together and does not differentiate channels.** The
+  within-layer SD of the neuron-level gate-in score is ≤ 0.001 in the first conv layer and
+  < 5 × 10⁻⁵ in the other twelve layers for every λ. No tested λ produces the bimodal
+  open/closed gate distribution that gate-based pruning assumes.
+* n = 3, no statistical tests; descriptive only.
+
+## IV.4 RQ5: score vs single-unit removal damage
+
+Spearman ρ between score and validation-loss increase after zeroing one channel (64 channels
+per layer; mean over 13 layers per seed, then mean ± SD over 5 seeds;
+`analysis/reliability_summary.csv`).
+
+| Criterion | Dense | Gated | Slimming |
+|---|---|---|---|
+| Activation | −0.010 ± 0.027 | 0.040 ± 0.043 | −0.057 ± 0.014 |
+| Taylor | −0.025 ± 0.056 | −0.006 ± 0.064 | −0.010 ± 0.030 |
+| L1 in+out | −0.014 ± 0.044 | −0.015 ± 0.058 | 0.014 ± 0.039 |
+| BN-\|γ\| | −0.063 ± 0.040 | −0.043 ± 0.052 | −0.015 ± 0.032 |
+| Random | 0.021 ± 0.026 | 0.004 ± 0.054 | −0.001 ± 0.028 |
+| Gate-out | — | −0.070 ± 0.058 | — |
+| Gate-combined | — | −0.141 ± 0.052 | — |
+| **Gate-in** | — | **−0.187 ± 0.028** | — |
+
+* **Averaged over layers, no criterion predicts single-channel damage on the fully trained
+  VGG**: every conventional criterion is within about two SD of zero. Gate-in is the most
+  negative score, and it is negative on all five seeds.
+* The layer average hides a strong layer dependence (gated source, mean over seeds, from
+  `seed*/reliability/correlations.csv`): in the first two conv layers L1 / L2 / Taylor /
+  activation have ρ = +0.55 … +0.67 and gate-in −0.65 / −0.30; in between the correlations are weaker and
+  mixed in sign (mostly within ±0.35); in the **last two conv layers every magnitude-type criterion is
+  strongly negative (ρ ≈ −0.9)**, gate-in −0.33 / −0.67. These runs do not identify why.
+* Single-channel removal is a very weak perturbation here: mean loss increase 1.3 × 10⁻³ nats
+  on the gated source (median 2.4 × 10⁻⁵), and 47 % of removals (46 % dense, 31 % Slimming)
+  lower the validation loss. Single-unit damage is therefore a poor proxy for the joint removal
+  of 20–60 % of a layer; for VGG the evidence on score quality is §IV.1, not these correlations.
+* Calibration-resampling stability (`analysis/stability_summary.csv`, 65 layer × seed values):
+  activation 0.996 – 0.998; Taylor 0.70 – 0.80 (SD ≈ 0.25), i.e. Taylor rankings change
+  noticeably with the calibration subset.
+
+## IV.5 RQ3: stability across seeds
+
+The SD over five seeds is 0.06 – 0.36 pp for every conventional criterion at every ratio
+(0.58 for Slimming-uniform at 60 %). Gate-in and gate-combined are the least stable:
+SD 1.15 and 0.74 pp at 40 %, 0.51 and 0.43 pp at 60 %.
+
+## IV.6 RQ4: measured efficiency (Tesla T4 and one CPU thread)
+
+`benchmark/benchmark_results.csv`: physically smaller compact models, median of 100 timed
+forward passes after 20 warm-up passes; CPU latency with one thread on the Kaggle host.
+
+| Model | Params | MACs | Size | GPU bs 1 (ms) | GPU bs 256 (ms) | CPU bs 1 (ms) | CPU bs 64 (ms) |
+|---|---|---|---|---|---|---|---|
+| Dense | 14,724,042 | 313.2 M | 59.0 MB | 2.81 | 45.76 | 16.06 | 490.9 |
+| 20 % removed | 9,447,740 | 202.4 M | 37.8 MB | 3.10 | 37.41 | 11.13 | 355.4 |
+| 40 % removed | 5,332,682 | 114.2 M | 21.4 MB | 2.55 | 30.23 | 7.38 | 201.6 |
+| 60 % removed | 2,369,066 | 51.3 M | 9.5 MB | 2.25 | 15.67 | 4.51 | 118.7 |
+| Slimming-global 60 % (5 seeds) | 2.54 – 2.67 M | 184.7 – 189.7 M | 10.2 – 10.7 MB | 1.73 – 2.27 | 30.2 – 32.0 | 7.19 – 7.67 | 302 – 310 |
+| Gated training model | 14,724,042 (+14.7 M gates) | 313.2 M | 59.0 MB | 4.11 | 48.42 | 41.03 | 473.5 |
+
+* **GPU, batch 256:** MAC reductions of 35 / 64 / 84 % give measured speed-ups of
+  1.22× / 1.51× / 2.92×. **GPU, batch 1:** 2.3 – 3.1 ms for every model; no usable speed-up
+  (the 20 % model measured slower than dense).
+* **CPU, one thread:** 1.44× / 2.18× / 3.56× at batch 1 and 1.38× / 2.44× / 4.13× at batch 64.
+* Measured speed-up is below the MAC ratio (1.55× / 2.74× / 6.11×) in every setting.
+* Peak GPU memory at batch 256 is not monotone in model size (511 / 403 / 505 / 196 MB) and is
+  not used as evidence.
+* Slimming-global at 60 % keeps the dense accuracy (93.34 %) with 82 % fewer parameters, but
+  only 40 % fewer MACs: 1.43 – 1.51× on GPU at batch 256, against 2.92× for the uniform 60 %
+  model, which is 2.1 – 3.2 pp less accurate for the non-gate criteria.
+* The gated training model stores 29.4 M parameters and is 2.6× slower than dense on CPU at
+  batch 1 (1.06× on GPU at batch 256); it must be folded before deployment.
+
+## IV.7 Threats to validity (Part IV)
+
+1. **n = 5.** Exact Wilcoxon cannot reach significance after Holm; support rests on the paired
+   t-test, whose normality assumption is only weakly checkable at n = 5. At 40 % only one
+   comparison survives Holm despite 5/5 wins for 14 methods.
+2. **Ablations on 3 seeds**, without tests. Ablations B, D and E were not run on VGG.
+3. **One dataset/architecture pair** (CIFAR-10 / VGG-16-BN); ResNet (Stage C) was not run.
+4. **Gate initialisation fixed at 2.0** and gate weight decay 0, as in the existing
+   implementation; other initialisations were not tried on VGG.
+5. **Latency** was measured on a shared Kaggle host (one CPU thread, one T4); absolute values
+   will differ elsewhere, and GPU batch-1 timings are at the noise level.
+6. Checkpoints and raw score tensors are not in the repository; they can be regenerated with
+   the commands below (same seeds; bitwise equality on a different GPU is not guaranteed).
+
+## IV.8 Reproduce
+
+```bash
+bash scripts/research/run_vgg_kaggle.sh                 # Kaggle GPU T4 x2, three 11 h sessions (RUNNING.md §4d)
+bash scripts/research/run_vgg_gpu_pipeline.sh python    # any single CUDA GPU
 ```

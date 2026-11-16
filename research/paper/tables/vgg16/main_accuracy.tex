@@ -1,0 +1,27 @@
+\begin{table}[t]
+\centering
+\caption{\texttt{vgg16}: test accuracy (\%, mean $\pm$ sample SD over 5 seeds) after 20 fine-tuning epoch(s). Criteria score the gated source except Net. Slimming (own training objective); identical compact architectures per column.}
+\label{tab:vgg16_main}
+\footnotesize
+\setlength{\tabcolsep}{2.5pt}
+\begin{tabular}{lccc}
+\toprule
+ & \multicolumn{3}{c}{Hidden units removed} \\
+Method & 20\% & 40\% & 60\% \\
+\midrule
+Gate-in (existing) & 92.34$\pm$0.24 & 89.94$\pm$1.15 & 86.75$\pm$0.51 \\
+Taylor & 92.83$\pm$0.19 & 92.31$\pm$0.36 & 90.87$\pm$0.30 \\
+Activation & 92.84$\pm$0.22 & 92.23$\pm$0.10 & 90.68$\pm$0.23 \\
+L1 in+out & 92.94$\pm$0.17 & 92.54$\pm$0.07 & 91.22$\pm$0.19 \\
+L2 in+out & 93.03$\pm$0.30 & 92.51$\pm$0.30 & 91.10$\pm$0.11 \\
+Net. Slimming & 92.94$\pm$0.21 & 92.39$\pm$0.24 & 90.28$\pm$0.58 \\
+Gate-combined (V2) & 92.54$\pm$0.28 & 90.67$\pm$0.74 & 86.70$\pm$0.43 \\
+Gate-out (V1) & 92.88$\pm$0.19 & 92.12$\pm$0.17 & 90.56$\pm$0.32 \\
+Random & 92.74$\pm$0.08 & 92.19$\pm$0.17 & 90.19$\pm$0.21 \\
+\midrule
+Unpruned gated + FT & \multicolumn{3}{c}{93.26$\pm$0.27} \\
+Unpruned dense + FT & \multicolumn{3}{c}{93.25$\pm$0.25} \\
+Unpruned slimming + FT & \multicolumn{3}{c}{93.25$\pm$0.16} \\
+\bottomrule
+\end{tabular}
+\end{table}

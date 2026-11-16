@@ -136,10 +136,13 @@ later session resumes from that output.
    `artifacts/research/vgg16/` folder.
 
 `DRY=1 bash scripts/research/run_vgg_kaggle.sh` lists finished and pending tasks without
-running anything. Time on T4s has not been measured; check the per-epoch times in the logs
-after the first few minutes. A rough guess is 15–20 h for the five main seeds on two GPUs plus
-about 10 h for ablation A (it trains six extra gated sources per pilot seed), i.e. three or
-more 11 h sessions.
+running anything. Measured on T4s: about 35 min per 160-epoch source and 5.3 h per seed
+(sources, comparison, reliability); the whole protocol took three sessions (11 h, 11 h, about
+4 h). The saved output is several GB because of checkpoints; to download only the result
+files, attach the final output to a new notebook and run
+`cd <...>/artifacts/research/vgg16 && zip -qr /kaggle/working/vgg16_results.zip . -x '*.pt' '*/masks/*'`,
+then unzip that file into `artifacts/research/vgg16/` here. `analyze_results.py` runs on those
+files without a GPU (it skips the two raw-score figures when `scores.pt` is absent).
 
 ## 4c. Compiling the manuscript
 
