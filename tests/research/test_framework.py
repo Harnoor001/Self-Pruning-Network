@@ -289,6 +289,55 @@ def test_incoming_gate_level_is_batchnorm_invariant_in_training_mode():
     assert torch.allclose(before, after, atol=1e-3)
 
 
+def _incoming_gate_gradient_sum_ratio(eps: float | None) -> float:
+    """|sum_i dL/dS_ji| / sum_i |dL/dS_ji|, averaged over neurons, for one gated layer with equal gates.
+
+    ``eps=None`` disables batch normalisation. Training-mode batch statistics, float64.
+    """
+    generator = torch.Generator().manual_seed(0)
+    dtype = torch.float64
+    n_in, n_hidden, n_batch = 50, 20, 64
+    weight = torch.randn(n_hidden, n_in, dtype=dtype, generator=generator) * 0.2
+    bias = torch.randn(n_hidden, dtype=dtype, generator=generator) * 0.1
+    head = torch.randn(4, n_hidden, dtype=dtype, generator=generator) * 0.3
+    scores = torch.full((n_hidden, n_in), 2.0, dtype=dtype, requires_grad=True)
+    x = torch.randn(n_batch, n_in, dtype=dtype, generator=generator) + 0.3
+    y = torch.randint(0, 4, (n_batch,), generator=generator)
+    z = x @ (weight * torch.sigmoid(scores)).T + bias
+    if eps is not None:
+        z = (z - z.mean(0)) / torch.sqrt(z.var(0, unbiased=False) + eps)
+    loss = nn.functional.cross_entropy(torch.relu(z) @ head.T, y)
+    (grad,) = torch.autograd.grad(loss, scores)
+    return float(grad.sum(1).abs().mean() / grad.abs().sum(1).mean())
+
+
+def test_mean_incoming_gate_gradient_vanishes_behind_batchnorm_up_to_eps():
+    """With equal gates, BN makes the data gradient of a neuron's mean incoming gate vanish as eps -> 0."""
+    exact = _incoming_gate_gradient_sum_ratio(0.0)
+    default = _incoming_gate_gradient_sum_ratio(1e-5)
+    large_eps = _incoming_gate_gradient_sum_ratio(1e-2)
+    no_bn = _incoming_gate_gradient_sum_ratio(None)
+    assert exact < 1e-12
+    assert exact < default < large_eps < no_bn       # invariance is exact only for eps = 0
+    assert default < 1e-4 and no_bn > 1e-2
+
+
+def test_rescaling_incoming_weights_changes_eval_mode_output_with_fixed_running_statistics():
+    """The BN invariance holds for batch statistics, not for fixed running statistics."""
+    torch.manual_seed(0)
+    block = nn.Sequential(nn.Linear(50, 20), nn.BatchNorm1d(20)).train()
+    x = torch.randn(64, 50)
+    for _ in range(200):
+        block(x)
+    before_train = block(x)
+    block.eval()
+    before_eval = block(x)
+    with torch.no_grad():
+        block[0].weight[3] *= 0.3
+    assert not torch.allclose(block(x), before_eval, atol=1e-2)
+    assert torch.allclose(block.train()(x), before_train, atol=1e-3)
+
+
 # --------------------------------------------------------------------------- metrics
 def test_macs_and_parameters_for_known_mlp():
     model = MLP(input_dim=3072, hidden_dims=[20, 10], num_classes=4)
