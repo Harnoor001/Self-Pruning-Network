@@ -162,6 +162,7 @@ def test_dense_mode_remains_available() -> None:
 def test_pruned_checkpoint_reload_preserves_prediction(tmp_path) -> None:
     model = SelfPruningMLP(input_dim=4, hidden_dims=[3], num_classes=2)
     model.hard_prune_target_sparsity(0.5)
+    model.eval()  # dropout would otherwise make the two forward passes differ at random
     inputs = torch.randn(2, 4)
     expected = model(inputs)
     path = tmp_path / "pruned.pt"
@@ -172,6 +173,7 @@ def test_pruned_checkpoint_reload_preserves_prediction(tmp_path) -> None:
     restored = SelfPruningMLP(**{key: payload["model_config"][key] for key in
                                  ("input_dim", "hidden_dims", "num_classes", "dropout", "use_batchnorm")})
     restored.load_state_dict(payload["model_state_dict"])
+    restored.eval()
     assert torch.equal(restored.prunable_layers[0].mask, model.prunable_layers[0].mask)
     assert torch.equal(restored(inputs), expected)
 

@@ -1,0 +1,12 @@
+{
+  "timestamp_utc": "2026-11-12T10:04:52.129994+00:00",
+  "python_version": "3.11.9",
+  "platform": "Windows-10-10.0.26200-SP0",
+  "processor": "Intel64 Family 6 Model 154 Stepping 3, GenuineIntel",
+  "torch_version": "2.11.0+cpu",
+  "cuda_available": false,
+  "cuda_version": null,
+  "cudnn_version": null,
+  "cpu_threads": 14,
+  "gpu_note": "No CUDA device available: GPU latency/memory were NOT measured."
+}

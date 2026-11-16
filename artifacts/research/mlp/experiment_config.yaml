@@ -1,0 +1,171 @@
+deterministic: true
+device: auto
+seeds:
+- 42
+- 123
+- 2024
+- 7
+- 21
+pilot_seeds:
+- 42
+- 123
+- 2024
+pruning:
+  ratios:
+  - 0.2
+  - 0.4
+  - 0.6
+  min_keep: 1
+  controls: true
+  save_compact_checkpoints: false
+  methods:
+  - random@gated
+  - l1@gated
+  - l2@gated
+  - activation@gated
+  - taylor@gated
+  - gate_in@gated
+  - gate_out@gated
+  - gate_combined@gated
+  - bn_gamma@gated
+  - random@dense
+  - l1@dense
+  - l2@dense
+  - activation@dense
+  - taylor@dense
+  - slimming@slimming
+  - slimming@slimming:global
+reliability:
+  sources:
+  - gated
+  - dense
+  - slimming
+  criteria:
+  - random
+  - l1
+  - l2
+  - activation
+  - taylor
+  - gate_in
+  - gate_out
+  - gate_combined
+  - bn_gamma
+  - l1_in
+  units_per_layer: 64
+benchmark:
+  cpu_threads: 1
+  cpu_batch_sizes:
+  - 1
+  - 64
+  gpu_batch_sizes:
+  - 1
+  - 256
+  warmup: 20
+  iterations: 100
+ablation:
+  gate_lambda:
+    sources:
+      gated_lam1e-6_sum:
+        objective: gated
+        train:
+          gate_lambda: 1.0e-06
+          gate_penalty_norm: sum
+      gated_lam1e-5_sum:
+        objective: gated
+        train:
+          gate_lambda: 1.0e-05
+          gate_penalty_norm: sum
+      gated_lam1e-4_sum:
+        objective: gated
+        train:
+          gate_lambda: 0.0001
+          gate_penalty_norm: sum
+      gated_lam1e-3_sum:
+        objective: gated
+        train:
+          gate_lambda: 0.001
+          gate_penalty_norm: sum
+      gated_lam1e-1_mean:
+        objective: gated
+        train:
+          gate_lambda: 0.1
+          gate_penalty_norm: mean
+      gated_lam1e+0_mean:
+        objective: gated
+        train:
+          gate_lambda: 1.0
+          gate_penalty_norm: mean
+    criteria:
+    - gate_in
+    - gate_out
+    - gate_combined
+    - random
+    ratios:
+    - 0.4
+  fine_tune:
+    epochs:
+    - 0
+    - 1
+    - 3
+    - 5
+    methods:
+    - random@gated
+    - l1@gated
+    - taylor@gated
+    - gate_in@gated
+    - gate_combined@gated
+    - slimming@slimming
+    ratios:
+    - 0.2
+    - 0.4
+    - 0.6
+name: mlp
+output_root: artifacts/research/mlp
+model:
+  family: mlp
+  input_dim: 3072
+  hidden_dims:
+  - 2048
+  - 1024
+  - 512
+  num_classes: 10
+  dropout: 0.3
+  use_batchnorm: true
+data:
+  data_dir: data
+  batch_size: 128
+  num_workers: 4
+  augmentation: mlp_legacy
+  split_mode: fixed
+  split_seed: 0
+  calibration_size: 2048
+  eval_batch_size: 1000
+train:
+  epochs: 30
+  optimizer: adamw
+  lr: 0.0008
+  weight_decay: 0.0001
+  gate_weight_decay: null
+  scheduler: cosine
+  label_smoothing: 0.05
+  amp: true
+sources:
+  dense:
+    objective: dense
+  gated:
+    objective: gated
+    train:
+      gate_lambda: 0.0
+      gate_penalty_norm: sum
+  slimming:
+    objective: slimming
+    train:
+      slimming_lambda: 0.0001
+fine_tune:
+  epochs: 5
+  optimizer: adamw
+  lr: 0.0002
+  weight_decay: 0.0001
+  scheduler: cosine
+  label_smoothing: 0.05
+  amp: true

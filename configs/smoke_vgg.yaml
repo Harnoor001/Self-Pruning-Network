@@ -1,0 +1,12 @@
+# CPU smoke test: tiny VGG, data subsets, 1 epoch. Results are NOT scientific evidence.
+extends: [vgg_cifar10.yaml]
+name: smoke_vgg
+output_root: artifacts/research/smoke_vgg
+seeds: [42, 123]
+model: {cfg: vgg_tiny}
+data: {num_workers: 0, train_limit: 1024, validation_limit: 256, test_limit: 256, calibration_size: 128}
+train: {epochs: 2, amp: false}
+pruning: {min_keep: 2}
+fine_tune: {epochs: 1, amp: false}
+reliability: {units_per_layer: 6}
+benchmark: {iterations: 10, warmup: 2}

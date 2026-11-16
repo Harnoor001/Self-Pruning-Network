@@ -1,0 +1,29 @@
+{
+  "timestamp_utc": "2026-11-16T12:22:25.248318+00:00",
+  "python_version": "3.13.16",
+  "platform": "Linux-6.18.55+-x86_64-with-glibc2.39",
+  "processor": "x86_64",
+  "torch_version": "2.11.0+cu130",
+  "cuda_available": true,
+  "cuda_version": "13.0",
+  "cudnn_version": 92700,
+  "cpu_threads": 1,
+  "gpu_name": "Tesla T4",
+  "gpu_total_memory_bytes": 15636037632,
+  "gpu_free_memory_bytes": 14219542528,
+  "gpu_count": 1,
+  "cpu_threads_used": 1,
+  "benchmark_config": {
+    "cpu_threads": 1,
+    "cpu_batch_sizes": [
+      1,
+      64
+    ],
+    "gpu_batch_sizes": [
+      1,
+      256
+    ],
+    "warmup": 20,
+    "iterations": 100
+  }
+}
